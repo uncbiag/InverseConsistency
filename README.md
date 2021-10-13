@@ -47,3 +47,9 @@ python training_scripts/2d_triangles_example.py
     pages     = {3396-3405}
 }
 ```
+
+## What people are saying
+
+> ICON is the UNet of image registration.
+
+~ Matt McCormick
