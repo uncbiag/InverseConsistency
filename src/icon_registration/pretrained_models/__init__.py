@@ -1,1 +1,1 @@
-from .OAI_knees import OAI_knees_registration_model
+from .OAI_knees import OAI_knees_registration_model, OAI_knees_gradICON_model
