@@ -98,7 +98,7 @@ def OAI_knees_gradICON_model(pretrained=True):
         trained_weights = torch.load("gradICON_oai_halfres_weights", map_location=torch.device("cpu"))
         third_net.regis_net.load_state_dict(trained_weights)
 
-    net = third
+    net = third_net
     BATCH_SIZE = 2
     network_wrappers.adjust_batch_size(net, BATCH_SIZE)
     net.to(config.device)
