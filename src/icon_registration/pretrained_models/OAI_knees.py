@@ -96,7 +96,7 @@ def OAI_knees_gradICON_model(pretrained=True):
               "https://github.com/HastingsGreer/InverseConsistency/releases/download/gradicon_pretrained_oai_model/gradICON_oai_halfres_weights", "gradICON_oai_halfres_weights")
 
         trained_weights = torch.load("gradICON_oai_halfres_weights", map_location=torch.device("cpu"))
-        third_net.load_state_dict(trained_weights)
+        third_net.regis_net.load_state_dict(trained_weights)
 
     net = third
     BATCH_SIZE = 2
