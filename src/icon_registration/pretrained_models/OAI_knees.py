@@ -85,7 +85,7 @@ def OAI_knees_gradICON_model(pretrained=True):
     SCALE = 2  # 1 IS QUARTER RES, 2 IS HALF RES, 4 IS FULL RES
     input_shape = [BATCH_SIZE, 1, 40 * SCALE, 96 * SCALE, 96 * SCALE]
 
-    network_wrappers.assignIdentityMap(fourth_net, input_shape)
+    network_wrappers.assignIdentityMap(third_net, input_shape)
 
     if pretrained:
         from os.path import exists
