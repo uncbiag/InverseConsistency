@@ -76,8 +76,7 @@ def OAI_knees_gradICON_model(pretrained=True):
         )
 
     third_net = inverseConsistentNet.GradientICON(
-            hires_net, 
-        ),  
+        hires_net,
         lambda x, y: (x - y) **2,
         0.2,
     )
