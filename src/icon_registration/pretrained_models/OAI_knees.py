@@ -81,7 +81,7 @@ def OAI_knees_gradICON_model(pretrained=True):
         0.2,
     )
 
-    BATCH_SIZE = 4
+    BATCH_SIZE = 8
     SCALE = 2  # 1 IS QUARTER RES, 2 IS HALF RES, 4 IS FULL RES
     input_shape = [BATCH_SIZE, 1, 40 * SCALE, 96 * SCALE, 96 * SCALE]
 
