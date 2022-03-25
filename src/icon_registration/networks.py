@@ -219,7 +219,6 @@ class UNet2(nn.Module):
             x = y + pad_or_crop(
                 self.avg_pool(x, 2, ceil_mode=True), y.size(), self.dimension
             )
-            y = F.layer_norm
 
         for depth in reversed(range(self.num_layers)):
             y = self.upConvs[depth](F.leaky_relu(x))
