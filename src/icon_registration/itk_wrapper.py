@@ -111,7 +111,7 @@ def resampling_transform(image, shape):
     initializer.InitializeTransform()
     
     if len(shape) == 3:
-        transformType = itk.MatrixOffsetTransformBase[itk.D, 3, 3]
+        transformType = itk.CenteredAffineTransform[itk.D, 3, 3]
         t2 = transformType.New()
         t2.SetCenter(transform.GetCenter())
         t2.SetOffset(transform.GetOffset())
