@@ -31,8 +31,8 @@ def register_pair(model, image_A, image_B):
     with torch.no_grad():
         x = model(A_resized, B_resized)
     
-    phi_AB = model.phi_AB(model.identityMap)[0].cpu()
-    phi_BA = model.phi_BA(model.identityMap)[0].cpu()
+    phi_AB = model.phi_AB(model.identityMap)
+    phi_BA = model.phi_BA(model.identityMap)
 
     return (
         create_itk_transform(phi_AB, model.identityMap, image_A, image_B),
@@ -41,7 +41,7 @@ def register_pair(model, image_A, image_B):
 
 def create_itk_transform(phi, ident, image_A, image_B):
     
-    disp = phi - ident[0].cpu()
+    disp = (phi - ident)[0].cpu()
 
     network_shape_list = list(ident.shape[2:])
 
