@@ -1,1 +1,26 @@
 
+name: test-windows-cpu
+
+on: [push, pull_request]
+
+jobs:
+  test-windows:
+    runs-on: windows-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Install dependencies
+      run: |
+        pip install -e .
+    - name: Test with unittest
+      run: |
+        python -m unittest -k CPU
+    - name: Test cpu inference
+      run: |
+        python -m unittest -k Itk
