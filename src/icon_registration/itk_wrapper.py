@@ -24,7 +24,6 @@ def register_pair(model, image_A, image_B):
 
     shape = model.identityMap.shape
     
-    
     # Here we resize the input images to the shape expected by the neural network. This affects the 
     # pixel stride as well as the magnitude of the displacement vectors of the resulting displacement field, which
     # create_itk_transform will have to compensate for.
