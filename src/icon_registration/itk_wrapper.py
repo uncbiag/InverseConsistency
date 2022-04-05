@@ -9,16 +9,18 @@ import icon_registration.network_wrappers
 
 import icon_registration.config as config
 
-def register_pair(model, image_A, image_B):
+def register_pair(model, image_A, image_B)->"(itk.CompositeTransform, itk.CompositeTransform)":
 
     assert( isinstance(image_A, itk.Image))
     assert( isinstance(image_B, itk.Image))
     
     icon_registration.network_wrappers.adjust_batch_size(model, 1)
+    # send model to cpu or gpu depending on config- auto detects capability
     model.to(config.device) 
 
     A_npy = np.array(image_A)
     B_npy = np.array(image_B)
+    # turn images into torch Tensors: add feature and batch dimensions (each of length 1)
     A_trch = torch.Tensor(A_npy).to(config.device)[None, None]
     B_trch = torch.Tensor(B_npy).to(config.device)[None, None]
 
@@ -44,7 +46,7 @@ def register_pair(model, image_A, image_B):
         create_itk_transform(phi_BA, model.identityMap, image_B, image_A)
     )
 
-def create_itk_transform(phi, ident, image_A, image_B):
+def create_itk_transform(phi, ident, image_A, image_B)->"itk.CompositeTransform":
     
     # itk.DeformationFieldTransform expects a displacement field, so we subtract off the identity map.
     disp = (phi - ident)[0].cpu()
@@ -57,7 +59,7 @@ def create_itk_transform(phi, ident, image_A, image_B):
 
     # We convert the displacement field into an itk Vector Image. 
     scale = torch.Tensor(network_shape_list)
-   
+    
     for _ in network_shape_list:
         scale = scale[:, None]
     disp *= scale
@@ -80,6 +82,8 @@ def create_itk_transform(phi, ident, image_A, image_B):
     phi_AB_itk.PrependTransform(from_network_space)
     phi_AB_itk.PrependTransform(tr)
     phi_AB_itk.PrependTransform(to_network_space)
+    
+    # warp(image_A, phi_AB_itk) is close to image_B
 
     return phi_AB_itk
 
