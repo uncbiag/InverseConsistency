@@ -62,6 +62,7 @@ def lung_network_preprocess(
 
 def LungCT_registration_model(pretrained=True):
 
+
     net = make_network()
     input_shape = [1, 1, 175, 175, 175]
 

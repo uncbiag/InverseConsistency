@@ -38,6 +38,7 @@ def readPoint(f_path):
 
         # Read the points
         points = np.ndarray([count, 3], dtype=np.float64)
+
         for i in range(count):
             if content[i] == "":
                 break
@@ -238,7 +239,6 @@ class TestLungRegistration(unittest.TestCase):
 
             image_A_seg = torch.cat([p[0] for p in dataset_seg]).cuda()
             image_B_seg = torch.cat([p[1] for p in dataset_seg]).cuda()
-
             return image_A, image_B, image_A_seg, image_B_seg
 
         net.cuda()
@@ -251,6 +251,7 @@ class TestLungRegistration(unittest.TestCase):
         for i in range(train_A.shape[0]):
             with torch.no_grad():
                 print(net(train_A[i : i + 1], train_B[i : i + 1]))
+
             phis.append((net.phi_AB_vectorfield.detach() * 2.0 - 1.0))
             phis_inv.append((net.phi_BA_vectorfield.detach() * 2.0 - 1.0))
             warped_A.append(net.warped_image_A[:, 0:1].detach())
