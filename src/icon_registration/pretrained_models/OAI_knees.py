@@ -28,7 +28,6 @@ def OAI_knees_registration_model(pretrained=True):
             hires_net,
             icon_registration.FunctionFromVectorField(networks.tallUNet2(dimension=3)),
         ),
-        lambda x, y: (x - y) ** 2,
         lambda x, y: torch.mean((x - y) ** 2),
         3600,
     )
