@@ -18,7 +18,8 @@ def download_test_data():
         ],
         stdout=sys.stdout,
     )
-    
+
+
 COPD_spacing = {
     "copd1": [0.625, 0.625, 2.5],
     "copd2": [0.645, 0.645, 2.5],
@@ -31,6 +32,8 @@ COPD_spacing = {
     "copd9": [0.664, 0.664, 2.5],
     "copd10": [0.742, 0.742, 2.5],
 }
+
+
 def read_copd_pointset(f_path):
     """
     :param f_path: the path to the file containing the position of points from copdgene dataset.

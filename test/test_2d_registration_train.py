@@ -80,7 +80,7 @@ class Test2DRegistrationTrain(unittest.TestCase):
             data_size=50, hollow=False, batch_size=batch_size
         )
 
-        lmbda = 1.
+        lmbda = 1.0
 
         print("GradientICON training")
         net = icon_registration.GradientICON(

@@ -5,6 +5,7 @@ from icon_registration.losses import (
     InverseConsistentNet,
     gaussian_blur,
     ssd_only_interpolated,
+    ssd,
 )
 from icon_registration.network_wrappers import (
     DownsampleRegistration,

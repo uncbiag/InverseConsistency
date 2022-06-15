@@ -70,8 +70,13 @@ class RegistrationModule(nn.Module):
             if isinstance(child, RegistrationModule):
                 child.assign_identity_map(
                     child_shape,
-                    None if self.downscale_factor != 1 else self.identity_map,
+                    # None if self.downscale_factor != 1 else self.identity_map,
                 )
+
+    def adjust_batch_size(self, size):
+        shape = self.input_shape
+        shape[0] = size
+        self.assign_identity_map(shape)
 
 
 class FunctionFromVectorField(RegistrationModule):

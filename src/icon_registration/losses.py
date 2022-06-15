@@ -294,6 +294,10 @@ class BlurredSSD:
         return torch.mean((self.blur(image_A[:, :1]) - self.blur(image_B[:, :1])) ** 2)
 
 
+def ssd(image_A, image_B):
+    return torch.mean((image_A[:, :1] - image_B[:, :1]) ** 2)
+
+
 def ssd_only_interpolated(image_A, image_B):
     if len(image_A.shape) - 2 == 3:
         dimensions_to_sum_over = [2, 3, 4]

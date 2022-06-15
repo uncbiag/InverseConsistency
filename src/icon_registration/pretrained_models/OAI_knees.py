@@ -28,6 +28,7 @@ def OAI_knees_registration_model(pretrained=True):
             hires_net,
             icon_registration.FunctionFromVectorField(networks.tallUNet2(dimension=3)),
         ),
+        lambda x, y: (x - y) ** 2,
         lambda x, y: torch.mean((x - y) ** 2),
         3600,
     )
@@ -40,6 +41,7 @@ def OAI_knees_registration_model(pretrained=True):
 
     if pretrained:
         from os.path import exists
+
         if not exists("network_weights/pretrained_OAI_model"):
             print("Downloading pretrained model (1.2 GB)")
             import urllib.request
