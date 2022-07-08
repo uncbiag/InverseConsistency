@@ -19,12 +19,12 @@ import footsteps
 parser = ArgumentParser()
 parser.add_argument("--exp", type=str, default="debug", help="name of the experiment")
 parser.add_argument('-g',"--gpu_id",required=False, type=int, default=0, help='gpu_id to use')
-parser.add_argument('-o',"--output_root",required=True, type=str, default="./", help='path to the experiment root folder.')
+parser.add_argument('-o',"--output_root", type=str, default="./", help='path to the experiment root folder.')
 parser.add_argument('-d',"--dataset_root",required=True, type=str, default="./", help='path to the dataset root folder.')
-parser.add_argument("--reg",required=True, type=str, default="GradientICON", help='choose from (InverseConsistentNet, GradientICON)')
-parser.add_argument("--sim",required=True, type=str, default="NCC", help='choose from (NCC, LNCC, AdaptiveNCC)')
-parser.add_argument("--lamda",required=True, type=float, default="0.1", help='lambda applied to the regularizer.')
-parser.add_argument("--augmentation",required=True, type=int, default="0", help='0 -- w/o augmentation, 1 -- w augmentation.')
+parser.add_argument("--reg", type=str, default="GradientICON", help='choose from (InverseConsistentNet, GradientICON)')
+parser.add_argument("--sim", type=str, default="NCC", help='choose from (NCC, LNCC, AdaptiveNCC)')
+parser.add_argument("--lamda", type=float, default="0.1", help='lambda applied to the regularizer.')
+parser.add_argument("--augmentation", type=int, default="0", help='0 -- w/o augmentation, 1 -- w augmentation.')
 
 EXP_LOSSES = {
    "NCC": icon_losses.ncc,
@@ -73,8 +73,8 @@ def make_2x_net():
     return inner_net
 
 def get_dataloaders(dataset_root, scale = "4xdown", batch_size=5):
-    img = torch.load(f"{dataset_root}/icon/lungs_train_{scale}_scaled", map_location='cpu')
-    mask = torch.load(f"{dataset_root}/icon/lungs_seg_train_{scale}_scaled", map_location='cpu')
+    img = torch.load(f"{dataset_root}/lungs_train_{scale}_scaled", map_location='cpu')
+    mask = torch.load(f"{dataset_root}/lungs_seg_train_{scale}_scaled", map_location='cpu')
     train_loader = torch.utils.data.DataLoader(
         torch.utils.data.TensorDataset(
             torch.stack(
@@ -90,8 +90,8 @@ def get_dataloaders(dataset_root, scale = "4xdown", batch_size=5):
         shuffle = True,
         drop_last = True
     )
-    img = torch.load(f"{dataset_root}/icon/lungs_test_{scale}_scaled", map_location='cpu')
-    mask = torch.load(f"{dataset_root}/icon/lungs_seg_test_{scale}_scaled", map_location='cpu')
+    img = torch.load(f"{dataset_root}/lungs_test_{scale}_scaled", map_location='cpu')
+    mask = torch.load(f"{dataset_root}/lungs_seg_test_{scale}_scaled", map_location='cpu')
     test_loader = torch.utils.data.DataLoader(
         torch.utils.data.TensorDataset(
             torch.stack(
@@ -150,7 +150,7 @@ def augment(image_A, image_B):
 def no_augment(image_A, image_B):
     return image_A, image_B
 
-def train_kenel(net, opt, writer, loader, augmenter, log_prefix, ite):
+def train_kernel(net, opt, writer, loader, augmenter, log_prefix, ite):
     scores = {"inv_loss": 0., "sim_loss": 0., "phi_mag": 0., "neg_jacob": 0.}
     ite_step = 0
     for d, _ in loader:
@@ -200,8 +200,8 @@ def val_kernel(net, writer, loader, log_prefix, ite, plot_path):
                     _dice(
                         seg[:,0].cuda(),
                         seg[:,1].cuda(),
-                        net.phi_AB_vectorfield,
-                        net.spacing
+                        net.module.phi_AB_vectorfield,
+                        net.module.spacing
                     ).detach().cpu()
                 ).item()
 
@@ -240,7 +240,6 @@ def train(net, augmenter, writer, exp_root, dataset_root, load_from="", load_epo
     net_par.train()
 
     for _ in range(start_epoch, 201):
-        train_kenel(net_par, optimizer, writer, train_loader, augmenter, "down2x", _)
 
         if _ % 10 == 0:
             val_kernel(net_par, writer, test_loader, "down2x", _, f"{exp_root}/figures")
@@ -257,6 +256,7 @@ def train(net, augmenter, writer, exp_root, dataset_root, load_from="", load_epo
             torch.save(
                 net.regis_net.state_dict(), exp_root + f"/checkpoints/down2x_net_{_:04}"
             )
+        train_kernel(net_par, optimizer, writer, train_loader, augmenter, "down2x", _)
         
         write_stats(writer, {"lr":np.array(lr_scheduler.get_last_lr()).mean()}, _, "lr")
         lr_scheduler.step()
@@ -271,7 +271,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     timestamp = '{:%Y_%m_%d_%H_%M_%S}'.format(datetime.now())
-    footsteps.initialize(args.output_root, args.exp + timestamp)
+    footsteps.initialize(output_root=args.output_root, run_name=args.exp + timestamp)
     exp_folder_path = footsteps.output_dir
 
     print(f"Saving experiment info at {exp_folder_path}")
