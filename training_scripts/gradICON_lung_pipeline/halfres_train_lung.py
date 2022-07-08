@@ -180,7 +180,7 @@ def val_kernel(net, writer, loader, log_prefix, ite, plot_path):
         warped_seg_A = compute_warped_image_multiNC(
                 seg_A, phi, spacing, spline_order=0
             )
-
+        
         len_intersection = torch.sum(warped_seg_A * seg_B, [1, 2, 3, 4])
         fn = torch.sum(seg_B, [1, 2, 3, 4]) - len_intersection
         fp = torch.sum(seg_A, [1, 2, 3, 4]) - len_intersection
@@ -191,7 +191,7 @@ def val_kernel(net, writer, loader, log_prefix, ite, plot_path):
     scores = {"inv_loss": 0., "sim_loss": 0., "phi_mag": 0., "neg_jacob": 0., "dice": 0.}
     with torch.no_grad():
         for img, seg in loader:
-            result_object  = net(img[:,0].cuda(), img[:,1].cuda())
+            result_object  = net.module(img[:,0].cuda(), img[:,1].cuda())
             scores["inv_loss"] += torch.mean(result_object.inverse_consistency_loss.detach().cpu()).item()
             scores["sim_loss"] += torch.mean(result_object.similarity_loss.detach().cpu()).item()
             scores["phi_mag"] += torch.mean(result_object.transform_magnitude.detach().cpu()).item()
@@ -204,6 +204,8 @@ def val_kernel(net, writer, loader, log_prefix, ite, plot_path):
                         net.module.spacing
                     ).detach().cpu()
                 ).item()
+            del net.module.phi_AB_vectorfield
+            del net.module.phi_BA_vectorfield
 
 
         total_run = len(loader)
@@ -241,7 +243,7 @@ def train(net, augmenter, writer, exp_root, dataset_root, load_from="", load_epo
 
     for _ in range(start_epoch, 201):
 
-        if _ % 10 == 0:
+        if _ % 20 == 0:
             val_kernel(net_par, writer, test_loader, "down2x", _, f"{exp_root}/figures")
         
         if _ % 20 == 0:
