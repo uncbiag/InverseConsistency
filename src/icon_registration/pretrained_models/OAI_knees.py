@@ -64,7 +64,7 @@ def OAI_knees_registration_model(pretrained=True):
     return net
 
 
-def OAI_knees_gradICON_model(pretrained=True):
+def OAI_knees_gradICON_model(pretrained=True) -> "icon_registration.GradientICON":
     # The definition of our final 4 step registration network.
 
     phi = icon_registration.FunctionFromVectorField(
