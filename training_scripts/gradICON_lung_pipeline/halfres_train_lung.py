@@ -241,12 +241,12 @@ def train(net, augmenter, writer, exp_root, dataset_root, load_from="", load_epo
     
     net_par.train()
 
-    for _ in range(start_epoch, 201):
+    for _ in range(start_epoch, 101):
 
-        if _ % 20 == 0:
+        if _ % 5 == 0:
             val_kernel(net_par, writer, test_loader, "down2x", _, f"{exp_root}/figures")
         
-        if _ % 20 == 0:
+        if _ % 10 == 0:
             torch.save(
                 {
                     "optimizer": optimizer.state_dict(),
@@ -273,7 +273,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     timestamp = '{:%Y_%m_%d_%H_%M_%S}'.format(datetime.now())
-    footsteps.initialize(output_root=args.output_root, run_name=args.exp + timestamp)
+    footsteps.initialize(output_root=args.output_root, run_name=args.exp +'/'+ timestamp)
     exp_folder_path = footsteps.output_dir
 
     print(f"Saving experiment info at {exp_folder_path}")
