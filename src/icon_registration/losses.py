@@ -131,40 +131,40 @@ class GradientICON(network_wrappers.RegistrationModule):
         )
 
         # compute squared Frobenius of Jacobian of icon error
+        def _compute_grad(phi_AB, phi_BA):
+            direction_losses = []
 
-        direction_losses = []
+            approximate_Iepsilon = phi_AB(phi_BA(Iepsilon))
 
-        approximate_Iepsilon = phi_AB(phi_BA(Iepsilon))
+            inverse_consistency_error = Iepsilon - approximate_Iepsilon
 
-        inverse_consistency_error = Iepsilon - approximate_Iepsilon
+            delta = 0.001
 
-        delta = 0.001
+            if len(self.identity_map.shape) == 4:
+                dx = torch.Tensor([[[[delta]], [[0.0]]]]).to(config.device)
+                dy = torch.Tensor([[[[0.0]], [[delta]]]]).to(config.device)
+                direction_vectors = (dx, dy)
 
-        if len(self.identity_map.shape) == 4:
-            dx = torch.Tensor([[[[delta]], [[0.0]]]]).to(config.device)
-            dy = torch.Tensor([[[[0.0]], [[delta]]]]).to(config.device)
-            direction_vectors = (dx, dy)
+            elif len(self.identity_map.shape) == 5:
+                dx = torch.Tensor([[[[[delta]]], [[[0.0]]], [[[0.0]]]]]).to(config.device)
+                dy = torch.Tensor([[[[[0.0]]], [[[delta]]], [[[0.0]]]]]).to(config.device)
+                dz = torch.Tensor([[[[0.0]]], [[[0.0]]], [[[delta]]]]).to(config.device)
+                direction_vectors = (dx, dy, dz)
+            elif len(self.identity_map.shape) == 3:
+                dx = torch.Tensor([[[delta]]]).to(config.device)
+                direction_vectors = (dx,)
 
-        elif len(self.identity_map.shape) == 5:
-            dx = torch.Tensor([[[[[delta]]], [[[0.0]]], [[[0.0]]]]]).to(config.device)
-            dy = torch.Tensor([[[[[0.0]]], [[[delta]]], [[[0.0]]]]]).to(config.device)
-            dz = torch.Tensor([[[[0.0]]], [[[0.0]]], [[[delta]]]]).to(config.device)
-            direction_vectors = (dx, dy, dz)
-        elif len(self.identity_map.shape) == 3:
-            dx = torch.Tensor([[[delta]]]).to(config.device)
-            direction_vectors = (dx,)
+            for d in direction_vectors:
+                approximate_Iepsilon_d = phi_AB(phi_BA(Iepsilon + d))
+                inverse_consistency_error_d = Iepsilon + d - approximate_Iepsilon_d
+                grad_d_icon_error = (
+                    inverse_consistency_error - inverse_consistency_error_d
+                ) / delta
+                direction_losses.append(torch.mean(grad_d_icon_error**2))
 
-        for d in direction_vectors:
-            approximate_Iepsilon_d = phi_AB(phi_BA(Iepsilon + d))
-            inverse_consistency_error_d = Iepsilon + d - approximate_Iepsilon_d
-            grad_d_icon_error = (
-                inverse_consistency_error - inverse_consistency_error_d
-            ) / delta
-            direction_losses.append(torch.mean(grad_d_icon_error**2))
+            return sum(direction_losses)
 
-        inverse_consistency_loss = sum(direction_losses)
-
-        return inverse_consistency_loss
+        return _compute_grad(phi_AB, phi_BA) + _compute_grad(phi_BA, phi_AB)
 
     def compute_similarity_measure(self, phi_AB, phi_BA, image_A, image_B):
         self.phi_AB_vectorfield = phi_AB(self.identity_map)
@@ -344,10 +344,13 @@ class AdaptiveNCC:
     def __call__(self, image_A, image_B):
 
         def _nccBeforeMean(image_A, image_B):
-            A = normalize(image_A[:, :1])
+            A = normalize(image_A)
             B = normalize(image_B)
             res = torch.mean(A * B, dim=(1,2,3,4))
             return 1 - res
+
+        image_A = image_A[:, :1]
+        image_B = image_B[:, :1]
 
         sims = [_nccBeforeMean(image_A, image_B)]
         for i in range(self.level):
