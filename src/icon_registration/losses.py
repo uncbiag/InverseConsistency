@@ -125,7 +125,7 @@ class GradientICON(network_wrappers.RegistrationModule):
     def compute_gradient_icon_loss(self, phi_AB, phi_BA):
         Iepsilon = (
             self.identity_map
-            + torch.randn(*self.identity_map.shape).to(config.device)
+            + torch.randn(*self.identity_map.shape).to(self.identity_map.device)
             * 1
             / self.identity_map.shape[-1]
         )
@@ -141,17 +141,17 @@ class GradientICON(network_wrappers.RegistrationModule):
             delta = 0.001
 
             if len(self.identity_map.shape) == 4:
-                dx = torch.Tensor([[[[delta]], [[0.0]]]]).to(config.device)
-                dy = torch.Tensor([[[[0.0]], [[delta]]]]).to(config.device)
+                dx = torch.Tensor([[[[delta]], [[0.0]]]]).to(self.identity_map.device)
+                dy = torch.Tensor([[[[0.0]], [[delta]]]]).to(self.identity_map.device)
                 direction_vectors = (dx, dy)
 
             elif len(self.identity_map.shape) == 5:
-                dx = torch.Tensor([[[[[delta]]], [[[0.0]]], [[[0.0]]]]]).to(config.device)
-                dy = torch.Tensor([[[[[0.0]]], [[[delta]]], [[[0.0]]]]]).to(config.device)
-                dz = torch.Tensor([[[[0.0]]], [[[0.0]]], [[[delta]]]]).to(config.device)
+                dx = torch.Tensor([[[[[delta]]], [[[0.0]]], [[[0.0]]]]]).to(self.identity_map.device)
+                dy = torch.Tensor([[[[[0.0]]], [[[delta]]], [[[0.0]]]]]).to(self.identity_map.device)
+                dz = torch.Tensor([[[[0.0]]], [[[0.0]]], [[[delta]]]]).to(self.identity_map.device)
                 direction_vectors = (dx, dy, dz)
             elif len(self.identity_map.shape) == 3:
-                dx = torch.Tensor([[[delta]]]).to(config.device)
+                dx = torch.Tensor([[[delta]]]).to(self.identity_map.device)
                 direction_vectors = (dx,)
 
             for d in direction_vectors:

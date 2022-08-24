@@ -12,6 +12,7 @@ import icon_registration.losses as icon_losses
 import numpy as np
 import torch
 import torch.nn.functional as F
+import copy
 from icon_registration.mermaidlite import compute_warped_image_multiNC
 from torch.utils.tensorboard import SummaryWriter
 import footsteps
@@ -72,7 +73,7 @@ def make_2x_net():
 
     return inner_net
 
-def get_dataloaders(dataset_root, scale = "4xdown", batch_size=5):
+def get_dataloaders(dataset_root, scale = "4xdown", batch_size={"train":5, "val":5}):
     img = torch.load(f"{dataset_root}/lungs_train_{scale}_scaled", map_location='cpu')
     mask = torch.load(f"{dataset_root}/lungs_seg_train_{scale}_scaled", map_location='cpu')
     train_loader = torch.utils.data.DataLoader(
@@ -86,7 +87,7 @@ def get_dataloaders(dataset_root, scale = "4xdown", batch_size=5):
                 0
             )
         ),
-        batch_size = batch_size,
+        batch_size = batch_size["train"],
         shuffle = True,
         drop_last = True
     )
@@ -103,7 +104,7 @@ def get_dataloaders(dataset_root, scale = "4xdown", batch_size=5):
                 0
             )
         ),
-        batch_size = batch_size,
+        batch_size = batch_size["val"],
         shuffle = False,
         drop_last = True
     )
@@ -183,30 +184,27 @@ def val_kernel(net, writer, loader, log_prefix, ite, plot_path):
         
         len_intersection = torch.sum(warped_seg_A * seg_B, [1, 2, 3, 4])
         fn = torch.sum(seg_B, [1, 2, 3, 4]) - len_intersection
-        fp = torch.sum(seg_A, [1, 2, 3, 4]) - len_intersection
+        fp = torch.sum(warped_seg_A, [1, 2, 3, 4]) - len_intersection
 
         return 2 * len_intersection / (2 * len_intersection + fn + fp + 1e-10)
 
-    
+    device = next(net.parameters()).device
     scores = {"inv_loss": 0., "sim_loss": 0., "phi_mag": 0., "neg_jacob": 0., "dice": 0.}
     with torch.no_grad():
         for img, seg in loader:
-            result_object  = net.module(img[:,0].cuda(), img[:,1].cuda())
+            result_object = net(img[:,0].to(device), img[:,1].to(device))
             scores["inv_loss"] += torch.mean(result_object.inverse_consistency_loss.detach().cpu()).item()
             scores["sim_loss"] += torch.mean(result_object.similarity_loss.detach().cpu()).item()
             scores["phi_mag"] += torch.mean(result_object.transform_magnitude.detach().cpu()).item()
             scores["neg_jacob"] += torch.mean(result_object.flips.cpu()).item()
             scores["dice"] += torch.mean(
                     _dice(
-                        seg[:,0].cuda(),
-                        seg[:,1].cuda(),
-                        net.module.phi_AB_vectorfield,
-                        net.module.spacing
+                        seg[:,0].to(device),
+                        seg[:,1].to(device),
+                        net.phi_AB_vectorfield,
+                        net.spacing
                     ).detach().cpu()
                 ).item()
-            del net.module.phi_AB_vectorfield
-            del net.module.phi_BA_vectorfield
-
 
         total_run = len(loader)
         for k,v in scores.items():
@@ -218,13 +216,14 @@ def train(net, augmenter, writer, exp_root, dataset_root, load_from="", load_epo
     BATCH_SIZE = 4
     GPUS = 4
     GPU_IDs = [0,1,2,3]
+    GPU_IDs_validate = 1
    
-    train_loader, test_loader = get_dataloaders(dataset_root, scale="2xdown", batch_size=GPUS*BATCH_SIZE)
+    train_loader, test_loader = get_dataloaders(dataset_root, scale="2xdown", batch_size={"train":GPUS*BATCH_SIZE, "val":2*BATCH_SIZE})
 
     if GPUS == 1:
         net_par = net.cuda()
     else:
-        net_par = torch.nn.DataParallel(net, device_ids=GPU_IDs, output_device=GPU_IDs[0]).cuda()
+        net_par = torch.nn.DataParallel(net.cuda(), device_ids=GPU_IDs, output_device=GPU_IDs[0])
     optimizer = torch.optim.Adam(net_par.parameters(), lr=0.001)
     lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda epoch: (0.8 ** int(epoch/30)))
     start_epoch = 0
@@ -243,8 +242,10 @@ def train(net, augmenter, writer, exp_root, dataset_root, load_from="", load_epo
 
     for _ in range(start_epoch, 101):
 
-        if _ % 5 == 0:
-            val_kernel(net_par, writer, test_loader, "down2x", _, f"{exp_root}/figures")
+        if _ % 10 == 0:
+            net_val = copy.deepcopy(net_par.module).to(f"cuda:{GPU_IDs_validate}")
+            val_kernel(net_val, writer, test_loader, "down2x", _, f"{exp_root}/figures")
+            del net_val
         
         if _ % 10 == 0:
             torch.save(
