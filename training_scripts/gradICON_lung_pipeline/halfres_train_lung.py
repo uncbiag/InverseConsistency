@@ -225,7 +225,7 @@ def train(net, augmenter, writer, exp_root, dataset_root, load_from="", load_epo
     else:
         net_par = torch.nn.DataParallel(net.cuda(), device_ids=GPU_IDs, output_device=GPU_IDs[0])
     optimizer = torch.optim.Adam(net_par.parameters(), lr=0.001)
-    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda epoch: (0.8 ** int(epoch/30)))
+    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda epoch: (0.8 ** int(epoch/20)))
     start_epoch = 0
 
     if load_from != "":
@@ -235,7 +235,7 @@ def train(net, augmenter, writer, exp_root, dataset_root, load_from="", load_epo
         optimizer.load_state_dict(opt_state_dict["optimizer"])
         # lr_scheduler.load_state_dict(opt_state_dict["lr_scheduler"])
         # lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 20, gamma=0.8, last_epoch=opt_state_dict["epoch"])
-        lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda epoch: (0.8 ** int(epoch/30)), last_epoch=opt_state_dict["epoch"])
+        lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda epoch: (0.8 ** int(epoch/20)), last_epoch=opt_state_dict["epoch"])
         start_epoch = opt_state_dict["epoch"] + 1
     
     net_par.train()
