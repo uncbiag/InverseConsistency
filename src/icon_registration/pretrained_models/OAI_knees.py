@@ -105,7 +105,7 @@ def OAI_knees_gradICON_model(pretrained=True):
             weights_location,
             map_location=torch.device("cpu"),
         )
-        third_net.regis_net.load_state_dict(trained_weights)
+        third_net.load_state_dict(trained_weights)
 
     third_net.assign_identity_map(input_shape)
 
