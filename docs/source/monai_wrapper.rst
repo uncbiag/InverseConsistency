@@ -193,7 +193,7 @@ Next, we train our hybrid model using the MONAI idiom
     show(model.warped_image_A - image_B)
     plt.tight_layout()
 
-Finally, let's visualize some registrations! To get a ddf compatible with :mod:`monai`'s Warp layer, use :func:`icon_registration.monai_wrapper.make_ddf`
+Finally, let's visualize some registrations! To call an ICON module on two images (or batches of images) and get back a ddf (deformation field) compatible with :mod:`monai`'s Warp layer, use :func:`icon_registration.monai_wrapper.make_ddf_using_icon_module`. Alternatively, if you have an ICON style transform already and want to convert it to a :mod:`monai` ddf, use :func:`icon_registration.monai_wrapper.make_ddf_from_icon_transform`.
 
 .. plot:: 
    :nofigs:
@@ -213,7 +213,7 @@ Finally, let's visualize some registrations! To get a ddf compatible with :mod:`
     for fixed, moving in zip(train_loader_fixed,train_loader_moving):
         moving = moving["image"].to(device)
         fixed = fixed["image"].to(device)
-        ddf = icon_registration.monai_wrapper.make_ddf(
+        ddf, loss = icon_registration.monai_wrapper.make_ddf_using_icon_module(
             model,
             moving, 
             fixed)
