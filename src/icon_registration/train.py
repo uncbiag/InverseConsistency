@@ -47,6 +47,7 @@ def train_batchfunction(
         optimizer.step()
 
         if iteration % 300 == 0:
+
             torch.save(
                 optimizer.state_dict(),
                 footsteps.output_dir + "optimizer_weights_" + str(iteration),
@@ -54,6 +55,34 @@ def train_batchfunction(
             torch.save(
                 unwrapped_net.regis_net.state_dict(),
                 footsteps.output_dir + "network_weights_" + str(iteration),
+            )
+
+            def render(im):
+                if len(im.shape) == 5:
+                    im = im[:, :, :, :, im.shape[4] // 2]
+                if torch.min(im) < 0:
+                    im = im - torch.min(im)
+                if torch.max(im) > 1:
+                    im = im / torch.max(im)
+                return im[:4, [0, 0, 0]].detach().cpu()
+
+            writer.add_images(
+                "image_A", render(moving_image), iteration, dataformats="NCHW"
+            )
+            writer.add_images(
+                "image_B", render(fixed_image), iteration, dataformats="NCHW"
+            )
+            writer.add_images(
+                "warped_image_A",
+                render(net.warped_image_A),
+                iteration,
+                dataformats="NCHW",
+            )
+            writer.add_images(
+                "difference",
+                render(torch.clip((net.warped_image_A[:, :1] - fixed_image[:, :1]) + 0.5, 0, 1)),
+                iteration,
+                dataformats="NCHW",
             )
 
 
