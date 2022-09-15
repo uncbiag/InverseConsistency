@@ -1,6 +1,8 @@
 Get Started: Register MNIST 5s
 ==============================
 
+The code in this tutorial is available as a `colab notebook <https://colab.research.google.com/drive/1Tu1w4DFEVUQM7wON4rY-nx97KTUq8ttR?usp=sharing>`_
+
 To learn to use ICON, we will train a model that registers pictures of the number 5 from the MNIST dataset.
 
 First create and activate some sort of virtual environment, and install torch into it `going by the official instructions <https://pytorch.org/get-started/locally/>`_
@@ -32,6 +34,7 @@ Next, create a git repo and import the code we need from `icon`.
    import numpy as np
    import torch
    import torchvision.utils
+   import matplotlib.pyplot as plt
 
 
 The function :func:`icon_registration.data.get_dataset_mnist` will give as a dataset of digits from MNIST filtered to only one number: this is useful for registration experiments, since there is a correct semantic map between two pictures of 5, but not between 5 and 8.
