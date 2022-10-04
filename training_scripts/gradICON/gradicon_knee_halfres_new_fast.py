@@ -25,7 +25,7 @@ class GradientICON(icon.RegistrationModule):
         self.lmbda = lmbda
         self.similarity = similarity
 
-        _g_kern =  60 * torch.randn([12, 3, 2, 2, 2])
+        _g_kern =  10 * torch.randn([12, 3, 2, 2, 2])
 
         _g_kern -= torch.mean(_g_kern, dim=[2, 3, 4], keepdim=True)
 
@@ -94,7 +94,7 @@ class GradientICON(icon.RegistrationModule):
             inverse_consistency_loss,
             similarity_loss,
             transform_magnitude,
-            losses.flips(self.phi_AB_vectorfield),
+            transform_magnitude,#losses.flips(self.phi_AB_vectorfield),
         )
 
 class TwoStepDownsampleRegistration(icon.RegistrationModule):
@@ -151,25 +151,38 @@ class TwoStepDownsampleRegistration(icon.RegistrationModule):
         self.netPhi.assign_identity_map(first_child_shape)
         self.netPsi.assign_identity_map(second_child_shape)
 
+def vm_unet(dimension, input_channels=2):
+    return icon.networks.UNet2(
+        5,
+        [[2, 16, 32, 32, 32, 32], [16, 32, 32, 32, 32]],
+        dimension,
+        input_channels=input_channels,
+    )
 
 
+#unet = vm_unet
+unet = networks.tallUNet2
 def make_network():
-    inner_net = icon.FunctionFromVectorField(networks.tallUNet2(dimension=3))
+    inner_net = icon.FunctionFromVectorField(unet(dimension=3))
 
     for _ in range(2):
          inner_net = TwoStepDownsampleRegistration(
              inner_net,
-             icon.FunctionFromVectorField(networks.tallUNet2(dimension=3)),
+             icon.FunctionFromVectorField(unet(dimension=3)),
              dimension=3
          )
 
-    net = GradientICON(inner_net, icon.ssd_only_interpolated, lmbda=.2)
+    inner_net = icon.TwoStepRegistration(
+        inner_net,
+        icon.FunctionFromVectorField(unet(dimension=3))
+    )
+    net = GradientICON(inner_net, icon.ssd_only_interpolated, lmbda=1)
     net.assign_identity_map(input_shape)
     return net
 
 
-BATCH_SIZE=8
-GPUS = 1
+BATCH_SIZE=2
+GPUS = 4
 def make_batch(dataset):
 
     image = torch.cat([random.choice(dataset) for _ in range(GPUS * BATCH_SIZE)])
@@ -182,7 +195,7 @@ def train_batchfunction(
     net,
     optimizer,
     make_batch,
-    steps=100000,
+    steps=500000,
     step_callback=(lambda net: None),
     unwrapped_net=None,
 ):
