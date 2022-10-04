@@ -1,6 +1,6 @@
-Evaluation:
+# Evaluation:
 
-overall goal: unified evaluation using itk interface
+## overall goal: unified evaluation using itk interface
 
 Add correct knee flipping to ./OAI\_eval.py
 
@@ -8,14 +8,16 @@ Create lung evaluation script (note notebook) based on https://colab.research.go
 
 Create brain evaluation script (not notebook) based on ../../notebooks/brain_ants_comparison.ipynb
 
-Data preparation:
+# Data preparation:
 
-overall goal: put scripts for turning folders of medical images into torch.load-able tensors into this directory. Document how to get folders of medical images
+## overall goal: 
+
+put scripts for turning folders of medical images into torch.load-able tensors into this directory. Document how to get folders of medical images
 
 
-Training:
+# Training:
 
-overall goal: unified training 
+# overall goal: unified training 
 
 each task will use model def in cvpr_network.py, training process in ../../src/icon_registration/train.py:train_batchfunction
 
