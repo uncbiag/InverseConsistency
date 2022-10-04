@@ -21,7 +21,7 @@ each task will use model def in cvpr_network.py, training process in ../../src/i
 
 write data loader "batch function" for each dataset
 
-model scripts (OAI) 
+example scripts (OAI) 
 ```
 ../gradICON/gradicon_knee_halfres_new.py
 ../gradICON/gradicon_knee_halfres_new_2ndhalfres.py
