@@ -17,7 +17,7 @@ put scripts for turning folders of medical images into torch.load-able tensors i
 
 # Training:
 
-# overall goal: unified training 
+## overall goal: unified training 
 
 each task will use model def in cvpr_network.py, training process in ../../src/icon_registration/train.py:train_batchfunction
 
