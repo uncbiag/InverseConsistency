@@ -11,7 +11,7 @@ net = cvpr_network.make_network(input_shape, include_last_step=True, lmbda=.2, l
 
 weights_path = "/playpen-raid1/tgreer/ICON/training_scripts/gradICON/results/ent2end_thenonemore-7/network_weights_26400"
 
-net.regis_net.load_state_dict(torch.load(weights_path))
+print(net.regis_net.load_state_dict(torch.load(weights_path), strict=False))
 
 
 with open("../oai_paper_pipeline/splits/test/pair_name_list.txt") as f:
@@ -21,9 +21,13 @@ with open("../oai_paper_pipeline/splits/test/pair_path_list.txt") as f:
 
 dices = []
 
-for test_pair in test_pair_paths:
-    test_pair = test_pair.replace("playpen", "playpen-raid").split()
-    test_pair = [itk.imread(path) for path in test_pair]
+for test_pair_path in test_pair_paths:
+    test_pair_path = test_pair_path.replace("playpen", "playpen-raid").split()
+    test_pair = [itk.imread(path) for path in test_pair_path]
+    test_pair = [
+            (itk.flip_image_filter(t, flip_axes=(False, False, True))
+                if "RIGHT" in path else t 
+                ) for (t , path) in zip(test_pair, test_pair_path)]
     image_A, image_B, segmentation_A, segmentation_B = test_pair
 
     phi_AB, phi_BA = itk_wrapper.register_pair(net, image_A, image_B)
