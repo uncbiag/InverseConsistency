@@ -8,12 +8,12 @@ import cvpr_network
 import icon_registration as icon
 import icon_registration.networks as networks
 
-input_shape = [1, 1, 130, 155, 130]
+input_shape = [1, 1, 80, 192, 192]
 
 BATCH_SIZE=8
 GPUS = 4
 #ITERATIONS_PER_STEP = 50000
-ITERATIONS_PER_STEP = 601
+ITERATIONS_PER_STEP = 301
 
 def make_batch(dataset):
     image = torch.cat([random.choice(dataset) for _ in range(GPUS * BATCH_SIZE)])
@@ -24,9 +24,7 @@ def make_batch(dataset):
 if __name__ == "__main__":
     footsteps.initialize()
 
-    dataset = torch.load(
-        "/playpen-ssd/tgreer/ICON_brain_preprocessed_data/stripped/brain_train_2xdown_scaled"
-    )
+    dataset = torch.load("/playpen-ssd/tgreer/knees_big_2xdownsample_train_set")
     net = cvpr_network.make_network(input_shape, include_last_step=False)
 
     if GPUS == 1:
