@@ -1,10 +1,14 @@
 import icon_registration as icon
+import torch
 
+import footsteps
+
+import icon_registration as icon
 import icon_registration.networks as networks
+import os
 
 from icon_registration import config
 from icon_registration.mermaidlite import compute_warped_image_multiNC
-import torch
 import icon_registration.network_wrappers as network_wrappers
 
 class GradientICONSparse(network_wrappers.RegistrationModule):
@@ -127,3 +131,41 @@ def make_network(input_shape, include_last_step=False, lmbda=1.5, loss_fn=icon.L
     net = GradientICONSparse(inner_net, loss_fn, lmbda=lmbda)
     net.assign_identity_map(input_shape)
     return net
+
+
+def train_two_stage(input_shape, batch_function, GPUS, ITERATIONS_PER_STEP, BATCH_SIZE):
+
+    net = make_network(input_shape, include_last_step=False)
+
+    if GPUS == 1:
+        net_par = net.cuda()
+    else:
+        net_par = torch.nn.DataParallel(net).cuda()
+    optimizer = torch.optim.Adam(net_par.parameters(), lr=0.00005)
+
+    net_par.train()
+
+    icon.train_batchfunction(net_par, optimizer, batch_function, unwrapped_net=net, steps=ITERATIONS_PER_STEP)
+
+    net_2 = make_network(input_shape, include_last_step=True)
+
+    net_2.regis_net.netPhi.load_state_dict(net.regis_net.state_dict())
+
+    del net
+    del net_par
+    del optimizer
+
+    if GPUS == 1:
+        net_2_par = net_2.cuda()
+    else:
+        net_2_par = torch.nn.DataParallel(net_2).cuda()
+    optimizer = torch.optim.Adam(net_2_par.parameters(), lr=0.00005)
+
+    net_2_par.train()
+    
+    # We're being weird by training two networks in one script. This hack keeps
+    # the second training from overwriting the outputs of the first.
+    footsteps.output_dir_impl = footsteps.output_dir + "2nd_step/"
+    os.makedirs(footsteps.output_dir)
+
+    icon.train_batchfunction(net_2_par, optimizer, batch_function, unwrapped_net=net_2, steps=ITERATIONS_PER_STEP )
