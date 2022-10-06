@@ -146,6 +146,11 @@ def train_two_stage(input_shape, batch_function, GPUS, ITERATIONS_PER_STEP, BATC
     net_par.train()
 
     icon.train_batchfunction(net_par, optimizer, batch_function, unwrapped_net=net, steps=ITERATIONS_PER_STEP)
+    
+    torch.save(
+                net.regis_net.state_dict(),
+                footsteps.output_dir + "Step_1_final.trch",
+            )
 
     net_2 = make_network(input_shape, include_last_step=True)
 
@@ -169,3 +174,8 @@ def train_two_stage(input_shape, batch_function, GPUS, ITERATIONS_PER_STEP, BATC
     os.makedirs(footsteps.output_dir)
 
     icon.train_batchfunction(net_2_par, optimizer, batch_function, unwrapped_net=net_2, steps=ITERATIONS_PER_STEP )
+    
+    torch.save(
+                net.regis_net.state_dict(),
+                footsteps.output_dir + "Step_2_final.trch",
+            )
