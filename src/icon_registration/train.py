@@ -48,7 +48,7 @@ def train_batchfunction(
         write_stats(writer, loss_object, iteration)
         optimizer.step()
 
-        if iteration % 30 == 0:
+        if iteration % 300 == 0:
             torch.save(
                 optimizer.state_dict(),
                 footsteps.output_dir + "optimizer_weights_" + str(iteration),
