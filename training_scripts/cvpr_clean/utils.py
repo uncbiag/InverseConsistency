@@ -1,5 +1,12 @@
 import itk
 import numpy as np
+import footsteps 
+logfile = open(footsteps.output_dir + "output.txt", "w")
+
+def log(val):
+    print(val)
+    print(val, file=logfile)
+
 def itk_mean_dice(im1, im2):
     array1 = itk.array_from_image(im1)
     array2 = itk.array_from_image(im2)
