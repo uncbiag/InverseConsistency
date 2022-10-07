@@ -4,11 +4,16 @@
 
 ## overall goal: unified evaluation using itk interface
 
-Add correct knee flipping to ./OAI\_eval.py
+
+
+(DONE)Add correct knee flipping to ./OAI\_eval.py
 
 Create lung evaluation script (not notebook) based on https://colab.research.google.com/github/uncbiag/ICON/blob/master/notebooks/ICON_lung_demo.ipynb
 
-Create brain evaluation script (not notebook) based on ../../notebooks/brain_ants_comparison.ipynb
+(DONE)Create brain evaluation script (not notebook) based on ../../notebooks/brain_ants_comparison.ipynb
+
+Gather and publish files used for brain evaluation (currently scattered across server)
+
 
 # Data preparation:
 
@@ -23,7 +28,7 @@ put scripts for turning folders of medical images into torch.load-able tensors i
 
 each task will use model def in cvpr_network.py, training process in ../../src/icon_registration/train.py:train_batchfunction
 
-write data loader "batch function" for each dataset
+(DONE)write data loader "batch function" for each dataset
 
 example scripts (OAI) 
 ```
@@ -34,6 +39,6 @@ example scripts (OAI)
 
 need to add optional validation to train_batchfunction.
 
-need to decide where to put two step training logic.
+(DONE)need to decide where to put two step training logic.
 
 
