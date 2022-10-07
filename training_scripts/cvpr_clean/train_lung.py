@@ -36,7 +36,7 @@ class lung_dataloader():
 
     def make_batch(self):
         if self.current_ite + self.batch_size > len(self.data):
-            self.shuffle()
+            self._shuffle()
             self.current_ite = 0
         
         batch = self.data[self.current_idx_list[self.current_ite:self.current_ite+self.batch_size]]
