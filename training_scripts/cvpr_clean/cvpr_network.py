@@ -176,6 +176,6 @@ def train_two_stage(input_shape, batch_function, GPUS, ITERATIONS_PER_STEP, BATC
     icon.train_batchfunction(net_2_par, optimizer, batch_function, unwrapped_net=net_2, steps=ITERATIONS_PER_STEP )
     
     torch.save(
-                net.regis_net.state_dict(),
+                net_2.regis_net.state_dict(),
                 footsteps.output_dir + "Step_2_final.trch",
             )
