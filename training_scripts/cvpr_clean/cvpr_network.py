@@ -119,15 +119,16 @@ class GradientICONSparse(network_wrappers.RegistrationModule):
 
 
 def make_network(input_shape, include_last_step=False, lmbda=1.5, loss_fn=icon.LNCC(sigma=5)):
-    inner_net = icon.FunctionFromVectorField(networks.tallUNet2(dimension=3))
+    dimension = len(input_shape) - 2
+    inner_net = icon.FunctionFromVectorField(networks.tallUNet2(dimension=dimension))
 
     for _ in range(2):
         inner_net = icon.TwoStepRegistration(
-            icon.DownsampleRegistration(inner_net, dimension=3),
-            icon.FunctionFromVectorField(networks.tallUNet2(dimension=3))
+            icon.DownsampleRegistration(inner_net, dimension=dimension),
+            icon.FunctionFromVectorField(networks.tallUNet2(dimension=dimension))
         )
     if include_last_step:
-        inner_net = icon.TwoStepRegistration(inner_net, icon.FunctionFromVectorField(networks.tallUNet2(dimension=3)))
+        inner_net = icon.TwoStepRegistration(inner_net, icon.FunctionFromVectorField(networks.tallUNet2(dimension=dimension)))
     net = GradientICONSparse(inner_net, loss_fn, lmbda=lmbda)
     net.assign_identity_map(input_shape)
     return net
