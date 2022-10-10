@@ -12,10 +12,10 @@ import icon_registration.networks as networks
 
 input_shape = [1, 1, 175, 175, 175]
 
-BATCH_SIZE=1
+BATCH_SIZE=4
 GPUS = 4
-#ITERATIONS_PER_STEP = 50000
-ITERATIONS_PER_STEP = 601
+ITERATIONS_PER_STEP = 50000
+#ITERATIONS_PER_STEP = 30
 WITH_AUGMENT = True
 
 class lung_dataloader():
@@ -40,6 +40,11 @@ class lung_dataloader():
             self.current_ite = 0
         
         batch = self.data[self.current_idx_list[self.current_ite:self.current_ite+self.batch_size]]
+        for i in range(self.batch_size):
+            if random.random() > .5:
+                temp = batch[i, 0]
+                batch[i, 0] = batch[i, 1]
+                batch[i, 1] = temp
         self.current_ite += self.batch_size
         
         if self.with_augment:
