@@ -19,13 +19,14 @@ import utils
 
 def preprocess(image):
     #image = itk.CastImageFilter[itk.Image[itk.SS, 3], itk.Image[itk.F, 3]].New()(image)
-    image = itk.shift_scale_image_filter(image, shift=0., scale = 1 / 1000)
-    image = itk.clamp_image_filter(image, bounds=(0, 1))
+    max_ = np.max(np.array(image))
+    image = itk.shift_scale_image_filter(image, shift=0., scale = .9 / max_)
+    #image = itk.clamp_image_filter(image, bounds=(0, 1))
     return image
 
 
 input_shape = [1, 1, 130, 155, 130]
-net = cvpr_network.make_network(input_shape, include_last_step=False)
+net = cvpr_network.make_network(input_shape, include_last_step=True)
 
 
 utils.log(net.regis_net.load_state_dict(torch.load(weights_path), strict=False))
@@ -46,7 +47,8 @@ for _ in range(20):
     n_A, n_B = (random.choice(atlas_registered) for _ in range(2))
     image_A, image_B = (preprocess(itk.imread(f"/playpen-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz")) for n in (n_A, n_B))
 
-    phi_AB, phi_BA = itk_wrapper.register_pair(net, image_A, image_B, finetune_steps=50)
+    #import pdb; pdb.set_trace()
+    phi_AB, phi_BA = itk_wrapper.register_pair(net, image_A, image_B, finetune_steps=None)
 
     segmentation_A, segmentation_B = (get_sub_seg(n) for n in (n_A, n_B))
 
