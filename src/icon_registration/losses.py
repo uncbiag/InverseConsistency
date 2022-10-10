@@ -410,12 +410,12 @@ def flips(phi):
         dV = torch.sum(torch.cross(a, b, 1) * c, axis=1, keepdims=True)
         return torch.sum(dV < 0) / phi.shape[0]
     elif len(phi.size()) == 4:
-        du = (phi[:, :, 1:, :-1] - phi[:, :, :-1, :-1]).detach().cpu()
-        dv = (phi[:, :, :-1, 1:] - phi[:, :, :-1, :-1]).detach().cpu()
+        du = (phi[:, :, 1:, :-1] - phi[:, :, :-1, :-1]).detach()
+        dv = (phi[:, :, :-1, 1:] - phi[:, :, :-1, :-1]).detach()
         dA = du[:, 0] * dv[:, 1] - du[:, 1] * dv[:, 0]
         return torch.sum(dA < 0) / phi.shape[0]
     elif len(phi.size()) == 3:
-        du = (phi[:, :, 1:] - phi[:, :, :-1]).detach().cpu()
+        du = (phi[:, :, 1:] - phi[:, :, :-1]).detach()
         return torch.sum(du < 0) / phi.shape[0]
     else:
         raise ValueError()

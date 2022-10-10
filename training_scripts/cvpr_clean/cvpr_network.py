@@ -64,11 +64,18 @@ class GradientICONSparse(network_wrappers.RegistrationModule):
             self.warped_image_A, image_B
         ) + self.similarity(self.warped_image_B, image_A)
 
-        Iepsilon = (
-            self.identity_map
-            + 2 * torch.randn(*self.identity_map.shape).to(config.device)
-            / self.identity_map.shape[-1]
-        )[:, :, ::2, ::2, ::2]
+        if len(self.input_shape) - 2 == 3:
+            Iepsilon = (
+                self.identity_map
+                + 2 * torch.randn(*self.identity_map.shape).to(config.device)
+                / self.identity_map.shape[-1]
+            )[:, :, ::2, ::2, ::2]
+        elif len(self.input_shape) - 2 == 2:
+            Iepsilon = (
+                self.identity_map
+                + 2 * torch.randn(*self.identity_map.shape).to(config.device)
+                / self.identity_map.shape[-1]
+            )[:, :, ::2, ::2]
 
         # compute squared Frobenius of Jacobian of icon error
 
@@ -118,24 +125,30 @@ class GradientICONSparse(network_wrappers.RegistrationModule):
         )
 
 
-def make_network(input_shape, include_last_step=False, lmbda=1.5, loss_fn=icon.LNCC(sigma=5)):
-    inner_net = icon.FunctionFromVectorField(networks.tallUNet2(dimension=3))
+def make_network(input_shape, include_last_step=False, lmbda=1.5, loss_fn=icon.LNCC(sigma=5), framework='gradICON'):
+    dimension = len(input_shape) - 2
+    inner_net = icon.FunctionFromVectorField(networks.tallUNet2(dimension=dimension))
 
     for _ in range(2):
         inner_net = icon.TwoStepRegistration(
-            icon.DownsampleRegistration(inner_net, dimension=3),
-            icon.FunctionFromVectorField(networks.tallUNet2(dimension=3))
+            icon.DownsampleRegistration(inner_net, dimension=dimension),
+            icon.FunctionFromVectorField(networks.tallUNet2(dimension=dimension))
         )
     if include_last_step:
-        inner_net = icon.TwoStepRegistration(inner_net, icon.FunctionFromVectorField(networks.tallUNet2(dimension=3)))
-    net = GradientICONSparse(inner_net, loss_fn, lmbda=lmbda)
+        inner_net = icon.TwoStepRegistration(inner_net, icon.FunctionFromVectorField(networks.tallUNet2(dimension=dimension)))
+    
+    if framework == 'gradICON':
+        net = GradientICONSparse(inner_net, loss_fn, lmbda=lmbda)
+    elif framework == 'icon':
+        #TODO: Should we make a sparse version of icon so that it behaves the same as gradicon?
+        net = icon.InverseConsistentNet(inner_net, loss_fn, lmbda=lmbda)
     net.assign_identity_map(input_shape)
     return net
 
 
-def train_two_stage(input_shape, batch_function, GPUS, ITERATIONS_PER_STEP, BATCH_SIZE):
+def train_two_stage(input_shape, batch_function, GPUS, ITERATIONS_PER_STEP, BATCH_SIZE, framework='gradICON'):
 
-    net = make_network(input_shape, include_last_step=False)
+    net = make_network(input_shape, include_last_step=False, framework=framework)
 
     if GPUS == 1:
         net_par = net.cuda()
@@ -152,7 +165,7 @@ def train_two_stage(input_shape, batch_function, GPUS, ITERATIONS_PER_STEP, BATC
                 footsteps.output_dir + "Step_1_final.trch",
             )
 
-    net_2 = make_network(input_shape, include_last_step=True)
+    net_2 = make_network(input_shape, include_last_step=True, framework=framework)
 
     net_2.regis_net.netPhi.load_state_dict(net.regis_net.state_dict())
 
