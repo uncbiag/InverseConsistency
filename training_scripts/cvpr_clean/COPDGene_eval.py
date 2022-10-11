@@ -32,6 +32,9 @@ net = cvpr_network.make_network(input_shape, include_last_step=False)
 utils.log(net.regis_net.load_state_dict(torch.load(weights_path), strict=False))
 net.eval()
 
+overall_1 = []
+overall_2 = []
+
 for case in cases:
     image_insp = itk.imread(f"{image_root}/{case}/{case}_INSP_STD_COPD_img.nii.gz")
     image_exp = itk.imread(f"{image_root}/{case}/{case}_EXP_STD_COPD_img.nii.gz")
@@ -46,7 +49,7 @@ for case in cases:
     image_insp_preprocessed = icon_registration.pretrained_models.lung_network_preprocess(image_insp, seg_insp)
     image_exp_preprocessed = icon_registration.pretrained_models.lung_network_preprocess(image_exp, seg_exp)
 
-    phi_AB, phi_BA = icon_registration.itk_wrapper.register_pair(net, image_insp_preprocessed, image_exp_preprocessed)
+    phi_AB, phi_BA = icon_registration.itk_wrapper.register_pair(net, image_insp_preprocessed, image_exp_preprocessed, finetune_steps=50)
 
     dists = []
     for i in range(len(landmarks_exp)):
@@ -55,7 +58,8 @@ for case in cases:
             np.array(phi_AB.TransformPoint(tuple(landmarks_exp[i]))),
         )
     dists.append(np.sqrt(np.sum((px - py) ** 2)))
-    print(f"Mean error on {case}: ", np.mean(dists))
+    utils.log(f"Mean error on {case}: ", np.mean(dists))
+    overall_1.append(np.mean(dists))
     dists = []
     for i in range(len(landmarks_insp)):
         px, py = (
@@ -63,6 +67,12 @@ for case in cases:
             np.array(phi_BA.TransformPoint(tuple(landmarks_insp[i]))),
         )
     dists.append(np.sqrt(np.sum((px - py) ** 2)))
-    print(f"Mean error on {case}: ", np.mean(dists))
+    utils.log(f"Mean error on {case}: ", np.mean(dists))
 
     
+    overall_2.append(np.mean(dists))
+
+
+utils.log("overall:")
+utils.log(np.mean(overall_1))
+utils.log(np.mean(overall_2))
