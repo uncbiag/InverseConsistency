@@ -6,6 +6,45 @@ from torch import nn
 from icon_registration import config
 
 
+class ConvNet(nn.Module):
+    def __init__(self, dimension=2, output_dim=100):
+        super().__init__()
+        self.dimension = dimension
+
+        if dimension == 2:
+            self.Conv = nn.Conv2d
+            self.avg_pool = F.avg_pool2d
+        else:
+            self.Conv = nn.Conv3d
+            self.avg_pool = F.avg_pool3d
+
+        self.features = [2, 16, 32, 64, 128, 128, 256]
+        self.convs = nn.ModuleList([])
+        for depth in range(len(self.features) - 1):
+            self.convs.append(
+                self.Conv(
+                    self.features[depth],
+                    self.features[depth + 1],
+                    kernel_size=3,
+                    padding=1,
+                )
+            )
+        self.dense2 = nn.Linear(256, 300)
+        self.dense3 = nn.Linear(300, output_dim)
+
+    def forward(self, x, y):
+        x = torch.cat([x, y], 1)
+        for depth in range(len(self.features) - 1):
+            x = F.relu(x)
+            x = self.convs[depth](x)
+            x = self.avg_pool(x, 2, ceil_mode=True)
+        x = self.avg_pool(x, x.shape[2:], ceil_mode=True)
+        x = torch.reshape(x, (-1, 256))
+        x = F.relu(self.dense2(x))
+        x = self.dense3(x)
+        return x
+
+
 class Autoencoder(nn.Module):
     def __init__(self, num_layers, channels):
         super().__init__()
