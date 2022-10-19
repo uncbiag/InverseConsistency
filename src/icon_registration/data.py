@@ -257,6 +257,63 @@ def get_knees_dataset():
 
     return brains, medbrains
 
+def get_copdgene_dataset(data_folder, cache_folder="./data_cache", lung_only=True, downscale=2):
+    '''
+    This function load the preprocessed COPDGene train set.
+    '''
+    import os
+    def process(iA, downscale, clamp=[-1000, 0], isSeg=False):
+        iA = iA[None, None, :, :, :]
+        #SI flip
+        iA = torch.flip(iA, dims=(2,))
+        if isSeg:
+            iA = iA.float()
+            iA = torch.nn.functional.max_pool3d(iA, downscale)
+            iA[iA>0] = 1
+        else:
+            iA = torch.clip(iA, clamp[0], clamp[1]) + clamp[0]
+            #TODO: For compatibility to the processed dataset(ranges between -1 to 0) used in paper, we subtract -1 here.
+            # Should remove -1 later.
+            iA = iA / torch.max(iA) - 1.
+            iA = torch.nn.functional.avg_pool3d(iA, downscale)
+        return iA
+
+    cache_name = f"{cache_folder}/lungs_train_{downscale}xdown_scaled"
+    if os.path.exists(cache_name):
+        imgs = torch.load(cache_name, map_location='cpu')
+        if lung_only:
+            try:
+                masks = torch.load(f"{cache_folder}/lungs_seg_train_{downscale}xdown_scaled", map_location='cpu')
+            except FileNotFoundError:
+                print("Segmentation data not found.")
+
+    else:
+        import itk
+        import glob
+        with open(f"{data_folder}/splits/train.txt") as f:
+            pair_paths = f.readlines()
+        imgs = []
+        masks = []
+        for name in tqdm.tqdm(list(iter(pair_paths))[:]):
+            name = name[:-1] # remove newline
+
+            image_insp = torch.tensor(np.asarray(itk.imread(glob.glob(f"{data_folder} /{name}/{name}_INSP_STD*_COPD_img.nii.gz")[0])))
+            image_exp= torch.tensor(np.asarray(itk.imread(glob.glob(f"{data_folder} /{name}/{name}_EXP_STD*_COPD_img.nii.gz")[0])))
+            imgs.append((process(image_insp), process(image_exp)))
+
+            seg_insp = torch.tensor(np.asarray(itk.imread(glob.glob(f"{data_folder} /{name}/{name}_INSP_STD*_COPD_label.nii.gz")[0])))
+            seg_exp= torch.tensor(np.asarray(itk.imread(glob.glob(f"{data_folder} /{name}/{name}_EXP_STD*_COPD_label.nii.gz")[0])))
+            masks.append((process(seg_insp, True), process(seg_exp, True)))
+
+        torch.save(imgs, f"{cache_folder}/lungs_train_{downscale}xdown_scaled")
+        torch.save(masks, f"{cache_folder}/lungs_seg_train_{downscale}xdown_scaled")
+    
+    if lung_only:
+        imgs = torch.cat([(torch.cat(d, 1)+1)*torch.cat(m, 1) for d,m in zip(imgs, masks)], dim=0)
+    else:
+        imgs = torch.cat([torch.cat(d, 1)+1 for d in imgs], dim=0)
+    return torch.utils.data.TensorDataset(imgs)
+
 def get_learn2reg_AbdomenCTCT_dataset(data_folder, cache_folder="./data_cache", clamp=[-1000,0], downscale=1):
     '''
     This function will return the training dataset of AbdomenCTCT registration task in learn2reg.
