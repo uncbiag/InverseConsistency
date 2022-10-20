@@ -9,12 +9,41 @@ import icon_registration.itk_wrapper as itk_wrapper
 import utils
 
 
+def itk_half_scale_image(img):
+    scale = .5
+    input_size = itk.size(img)
+    input_spacing = itk.spacing(img)
+    input_origin = itk.origin(img)
+    dimension = img.GetImageDimension()
 
+    output_size = [int(input_size[d] * scale) for d in range(dimension)]
+    output_spacing = [input_spacing[d] / scale for d in range(dimension)]
+    output_origin = [input_origin[d] + .5 * (output_spacing[d] - input_spacing[d]) for d in range(dimension)]
 
+    interpolator = itk.NearestNeighborInterpolateImageFunction.New(img)
+
+    resampled = itk.resample_image_filter(
+            img,
+            transform=itk.IdentityTransform[itk.D, 3].New(),
+            interpolator=interpolator,
+            size=output_size,
+            output_spacing=output_spacing,
+            output_origin=output_origin,
+            output_direction=img.GetDirection()
+    )
+    #print(img)
+    #print(resampled)
+    #exit()
+
+    return resampled
 input_shape = [1, 1, 80, 192, 192]
 net = cvpr_network.make_network(input_shape, include_last_step=True, lmbda=.2, loss_fn=icon.ssd_only_interpolated)
 
-weights_path = "/playpen-raid1/tgreer/ICON/training_scripts/gradICON/results/ent2end_thenonemore-7/network_weights_49800"
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("weights_path")
+args = parser.parse_args()
+weights_path = args.weights_path
 
 utils.log(net.regis_net.load_state_dict(torch.load(weights_path), strict=False))
 net.eval()
@@ -32,6 +61,9 @@ for test_pair_path in test_pair_paths:
                 if "RIGHT" in path else t 
                 ) for (t , path) in zip(test_pair, test_pair_path)]
     image_A, image_B, segmentation_A, segmentation_B = test_pair
+
+    segmentation_A = itk_half_scale_image(segmentation_A)
+    segmentation_B = itk_half_scale_image(segmentation_B)
 
     phi_AB, phi_BA = itk_wrapper.register_pair(net, image_A, image_B, finetune_steps=None)
 
