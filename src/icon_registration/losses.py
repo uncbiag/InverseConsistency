@@ -231,7 +231,111 @@ class GradientICON(network_wrappers.RegistrationModule):
             transform_magnitude,
             flips(self.phi_BA_vectorfield),
         )
+    
+BendingLoss = namedtuple(
+    "BendingLoss",
+    "all_loss bending_energy_loss similarity_loss transform_magnitude flips",
+)
+    
+class BendingEnergyNet(network_wrappers.RegistrationModule):
+    def __init__(self, network, similarity, lmbda):
+        super().__init__()
 
+        self.regis_net = network
+        self.lmbda = lmbda
+        self.similarity = similarity
+
+    def compute_bending_energy_loss(self, phi_AB_vectorfield):
+        if len(self.identity_map.shape) == 3:
+            bending_energy = torch.mean((
+                - phi_AB_vectorfield[:, :, 2:] 
+                + 2*phi_AB_vectorfield[:, :, 1:-1]
+                - phi_AB_vectorfield[:, :, :-2]
+            )**2)
+            
+        elif len(self.identity_map.shape) == 4:
+            bending_energy = torch.mean((
+                - phi_AB_vectorfield[:, :, 2:] 
+                + 2*phi_AB_vectorfield[:, :, 1:-1]
+                - phi_AB_vectorfield[:, :, :-2]
+            )**2) + torch.mean((
+                - phi_AB_vectorfield[:, :, :, 2:] 
+                + 2*phi_AB_vectorfield[:, :, :, 1:-1]
+                - phi_AB_vectorfield[:, :, :, :-2]
+            )**2)
+        elif len(self.identity_map.shape) == 5:
+            bending_energy = torch.mean((
+                - phi_AB_vectorfield[:, :, 2:] 
+                + 2*phi_AB_vectorfield[:, :, 1:-1]
+                - phi_AB_vectorfield[:, :, :-2]
+            )**2) + torch.mean((
+                - phi_AB_vectorfield[:, :, :, 2:] 
+                + 2*phi_AB_vectorfield[:, :, :, 1:-1]
+                - phi_AB_vectorfield[:, :, :, :-2]
+            )**2) + torch.mean((
+                - phi_AB_vectorfield[:, :, :, :, 2:] 
+                + 2*phi_AB_vectorfield[:, :, :, :, 1:-1]
+                - phi_AB_vectorfield[:, :, :, :, :-2]
+            )**2)
+        
+
+        return bending_energy
+
+    def compute_similarity_measure(self, phi_AB_vectorfield, image_A, image_B):
+
+        # tag images during warping so that the similarity measure
+        # can use information about whether a sample is interpolated
+        # or extrapolated
+
+        inbounds_tag = torch.zeros(tuple(image_A.shape), device=image_A.device)
+        if len(self.input_shape) - 2 == 3:
+            inbounds_tag[:, :, 1:-1, 1:-1, 1:-1] = 1.0
+        elif len(self.input_shape) - 2 == 2:
+            inbounds_tag[:, :, 1:-1, 1:-1] = 1.0
+        else:
+            inbounds_tag[:, :, 1:-1] = 1.0
+
+        self.warped_image_A = self.as_function(
+            torch.cat([image_A, inbounds_tag], axis=1)
+        )(phi_AB_vectorfield)
+        
+        similarity_loss = self.similarity(
+            self.warped_image_A, image_B
+        )
+        return similarity_loss
+
+    def forward(self, image_A, image_B) -> ICONLoss:
+
+        assert self.identity_map.shape[2:] == image_A.shape[2:]
+        assert self.identity_map.shape[2:] == image_B.shape[2:]
+
+        # Tag used elsewhere for optimization.
+        # Must be set at beginning of forward b/c not preserved by .cuda() etc
+        self.identity_map.isIdentity = True
+
+        self.phi_AB = self.regis_net(image_A, image_B)
+        self.phi_AB_vectorfield = self.phi_AB(self.identity_map)
+        
+        similarity_loss = self.compute_similarity_measure(
+            self.phi_AB_vectorfield, image_A, image_B
+        )
+
+        bending_energy_loss = self.compute_bending_energy_loss(
+            self.phi_AB_vectorfield
+        )
+
+        all_loss = self.lmbda * bending_energy_loss + similarity_loss
+
+        transform_magnitude = torch.mean(
+            (self.identity_map - self.phi_AB_vectorfield) ** 2
+        )
+        return ICONLoss(
+            all_loss,
+            bending_energy_loss,
+            similarity_loss,
+            transform_magnitude,
+            flips(self.phi_BA_vectorfield),
+        )
 
 def normalize(image):
     dimension = len(image.shape) - 2

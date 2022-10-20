@@ -81,7 +81,7 @@ class RegistrationModule(nn.Module):
 
     def forward(image_A, image_B):
         """Register a pair of images:
-        return a python function that warps a tensor of coordinates such that
+        return a python function phi_AB that warps a tensor of coordinates such that
 
         .. code-block:: python
 
@@ -109,17 +109,32 @@ class FunctionFromVectorField(RegistrationModule):
         self.net = net
 
     def forward(self, image_A, image_B):
-        vectorfield_phi = self.net(image_A, image_B)
+        tensor_of_displacements = self.net(image_A, image_B)
+        displacement_field = self.as_function(tensor_of_displacements)
 
-        def ret(input_):
-            if hasattr(input_, "isIdentity") and vectorfield_phi.shape == input_.shape:
-                return input_ + vectorfield_phi
-            else:
-                return input_ + compute_warped_image_multiNC(
-                    vectorfield_phi, input_, self.spacing, 1
-                )
+        def transform(coordinates):
+            if hasattr(coordinates, "isIdentity") and coordinates.shape == tensor_of_displacements.shape:
+                return coordinates + tensor_of_displacements
+            return coordinates + displacement_field(coordinates)
 
-        return ret
+        return transform
+    
+class SquaringVelocityField(RegistrationModule):
+   def __init__(self, net):
+       super().__init__()
+       self.net = net
+       self.n_steps = 256
+
+   def forward(self, image_A, image_B):
+       velocityfield_delta = self.net(image_A, image_B) / self.n_steps
+
+       for _ in range(8):
+         velocityfield_delta = velocityfield_delta + self.as_function(
+             velocityfield_delta)(velocityfield_delta + self.identity_map)
+       def transform(coordinate_tensor):
+           coordinate_tensor = coordinate_tensor + self.as_function(velocityfield_delta)(coordinate_tensor)
+           return coordinate_tensor
+       return transform
 
 
 def multiply_matrix_vectorfield(matrix, vectorfield):
@@ -145,15 +160,15 @@ class FunctionFromMatrix(RegistrationModule):
     def forward(self, image_A, image_B):
         matrix_phi = self.net(image_A, image_B)
 
-        def ret(input_):
-            shape = list(input_.shape)
+        def transform(tensor_of_coordinates):
+            shape = list(tensor_of_coordinates.shape)
             shape[1] = 1
-            input_homogeneous = torch.cat(
-                [input_, torch.ones(shape, device=input_.device)], axis=1
+            coordinates_homogeneous = torch.cat(
+                [tensor_of_coordinates, torch.ones(shape, device=tensor_of_coordinates.device)], axis=1
             )
-            return multiply_matrix_vectorfield(matrix_phi, input_homogeneous)[:, :-1]
+            return multiply_matrix_vectorfield(matrix_phi, coordinates_homogeneous)[:, :-1]
 
-        return ret
+        return transform
 
 
 class RandomShift(RegistrationModule):
@@ -189,15 +204,18 @@ class TwoStepRegistration(RegistrationModule):
         self.netPsi = netPsi
 
     def forward(self, image_A, image_B):
-        # Tag for optimization. Must be set at the beginning of forward because it is not preserved by .to(config.device)
+        
+        # Tag for shortcutting hack. Must be set at the beginning of 
+        # forward because it is not preserved by .to(config.device)
         self.identity_map.isIdentity = True
+            
         phi = self.netPhi(image_A, image_B)
-        phi_vectorfield = phi(self.identity_map)
-        self.image_A_comp_phi = self.as_function(image_A)(phi_vectorfield)
-        psi = self.netPsi(self.image_A_comp_phi, image_B)
-
-        ret = lambda input_: phi(psi(input_))
-        return ret
+        psi = self.netPsi(
+            self.as_function(image_A)(phi(self.identity_map)), 
+            image_B
+        )
+        return lambda tensor_of_coordinates: phi(psi(tensor_of_coordinates))
+        
 
 
 class DownsampleRegistration(RegistrationModule):
