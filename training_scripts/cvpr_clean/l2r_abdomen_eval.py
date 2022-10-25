@@ -6,7 +6,6 @@ import numpy as np
 import torch
 
 import cvpr_network
-import utils
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--weights_path", type=str, help="the path to the weights of the network")
@@ -21,16 +20,14 @@ args = parser.parse_args()
 weights_path = args.weights_path
 footsteps.initialize(output_root=args.output_folder)
 
+import utils
+
 net = cvpr_network.make_network(input_shape, include_last_step=False)
 
 utils.log(net.regis_net.load_state_dict(torch.load(weights_path), strict=False))
 net.to(device)
 net.eval()
 
-overall_1 = []
-overall_2 = []
-
-import glob
 import json
 import os
 
