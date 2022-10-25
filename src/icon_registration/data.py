@@ -335,7 +335,7 @@ def get_learn2reg_AbdomenCTCT_dataset(data_folder, cache_folder="./data_cache", 
         imgs = [np.asarray(itk.imread(glob.glob(data_folder + "/imagesTr/" + i + ".nii.gz")[0])) for i in train_cases]
         
         imgs = torch.Tensor(np.expand_dims(np.array(imgs), axis=1))
-        imgs = (torch.clamp(imgs, clamp[0], clamp[1]) + clamp[0])/clamp[1]
+        imgs = (torch.clamp(imgs, clamp[0], clamp[1]) + clamp[0])/(clamp[1] - clamp[0])
 
         # Cache the data
         if not os.path.exists(cache_folder):
@@ -372,7 +372,7 @@ def get_learn2reg_lungCT_dataset(data_folder, cache_folder="./data_cache", lung_
             imgs.append(img)
         
         imgs = torch.Tensor(np.array(imgs))
-        imgs = (torch.clamp(imgs, clamp[0], clamp[1]) + clamp[0])/clamp[1]
+        imgs = (torch.clamp(imgs, clamp[0], clamp[1]) + clamp[0])/(clamp[1] - clamp[0])
 
         # Cache the data
         if not os.path.exists(cache_folder):
