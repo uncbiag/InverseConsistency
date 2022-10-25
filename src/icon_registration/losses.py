@@ -505,21 +505,30 @@ def ssd_only_interpolated(image_A, image_B):
     return torch.mean(ssds)
 
 
-def flips(phi):
+def flips(phi, in_percentage=False):
     if len(phi.size()) == 5:
         a = phi[:, :, 1:, 1:, 1:] - phi[:, :, :-1, 1:, 1:]
         b = phi[:, :, 1:, 1:, 1:] - phi[:, :, 1:, :-1, 1:]
         c = phi[:, :, 1:, 1:, 1:] - phi[:, :, 1:, 1:, :-1]
 
         dV = torch.sum(torch.cross(a, b, 1) * c, axis=1, keepdims=True)
-        return torch.sum(dV < 0) / phi.shape[0]
+        if in_percentage:
+            return torch.mean((dV < 0).float()) * 100.
+        else:
+            return torch.sum(dV < 0) / phi.shape[0]
     elif len(phi.size()) == 4:
         du = (phi[:, :, 1:, :-1] - phi[:, :, :-1, :-1]).detach()
         dv = (phi[:, :, :-1, 1:] - phi[:, :, :-1, :-1]).detach()
         dA = du[:, 0] * dv[:, 1] - du[:, 1] * dv[:, 0]
-        return torch.sum(dA < 0) / phi.shape[0]
+        if in_percentage:
+            return torch.mean((dA < 0).float()) * 100.
+        else:
+            return torch.sum(dA < 0) / phi.shape[0]
     elif len(phi.size()) == 3:
         du = (phi[:, :, 1:] - phi[:, :, :-1]).detach()
-        return torch.sum(du < 0) / phi.shape[0]
+        if in_percentage:
+            return torch.mean((du < 0).float()) * 100.
+        else:
+            return torch.sum(du < 0) / phi.shape[0]
     else:
         raise ValueError()
