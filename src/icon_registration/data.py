@@ -265,7 +265,7 @@ def get_learn2reg_AbdomenCTCT_dataset(data_folder, cache_folder="./data_cache", 
     # Check whether we have cached the dataset
     import os
 
-    cache_name = f"{cache_folder}/learn2reg_abdomenctct_train_set"
+    cache_name = f"{cache_folder}/learn2reg_abdomenctct_train_set_clamp{clamp}scale{downscale}"
     if os.path.exists(cache_name):
         imgs = torch.load(cache_name)
     else:
@@ -277,8 +277,10 @@ def get_learn2reg_AbdomenCTCT_dataset(data_folder, cache_folder="./data_cache", 
         train_cases = [c["image"].split('/')[-1].split('.')[0] for c in data_info["training"]]
         imgs = [np.asarray(itk.imread(glob.glob(data_folder + "/imagesTr/" + i + ".nii.gz")[0])) for i in train_cases]
         
-        imgs = torch.Tensor(np.expand_dims(np.array(imgs), axis=1))
-        imgs = (torch.clamp(imgs, clamp[0], clamp[1]) + clamp[0])/clamp[1]
+        imgs = torch.Tensor(np.expand_dims(np.array(imgs), axis=1)).float()
+        print(torch.min(imgs), torch.max(imgs))
+        imgs = (torch.clamp(imgs, clamp[0], clamp[1]) - clamp[0])/(clamp[1] - clamp[0])
+        print(torch.min(imgs), torch.max(imgs))
 
         # Cache the data
         if not os.path.exists(cache_folder):
@@ -297,6 +299,7 @@ def get_learn2reg_lungCT_dataset(data_folder, cache_folder="./data_cache", lung_
     import os
 
     cache_name = f"{cache_folder}/learn2reg_lung_train_set_lung_only" if lung_only else f"{cache_folder}/learn2reg_lung_train_set"
+    cache_name += f"_clamp{clamp}scale{downscale}"
     if os.path.exists(cache_name):
         imgs = torch.load(cache_name)
     else:
@@ -311,11 +314,11 @@ def get_learn2reg_lungCT_dataset(data_folder, cache_folder="./data_cache", lung_
             img = np.array([np.asarray(itk.imread(glob.glob(data_folder + "/imagesTr/" + i)[0])) for i in p])
             if lung_only:
                 mask = np.array([np.asarray(itk.imread(glob.glob(data_folder + "/" + "/masksTr/" + i)[0])) for i in p])
-                img = img * mask
+                img = img * mask + clamp[0] * (1 - mask)
             imgs.append(img)
         
-        imgs = torch.Tensor(np.array(imgs))
-        imgs = (torch.clamp(imgs, clamp[0], clamp[1]) + clamp[0])/clamp[1]
+        imgs = torch.Tensor(np.array(imgs)).float()
+        imgs = (torch.clamp(imgs, clamp[0], clamp[1]) - clamp[0])/(clamp[1] - clamp[0])
 
         # Cache the data
         if not os.path.exists(cache_folder):
