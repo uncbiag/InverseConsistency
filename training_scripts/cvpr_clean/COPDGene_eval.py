@@ -1,5 +1,6 @@
 import itk
 import footsteps
+
 footsteps.initialize(output_root="evaluation_results/")
 import cvpr_network
 import torch
@@ -17,9 +18,10 @@ import icon_registration.pretrained_models.lung_ct
 image_root = "/playpen-raid1/lin.tian/data/lung/dirlab_highres_350"
 landmark_root = "/playpen-raid1/lin.tian/data/lung/reg_lung_2d_3d_1000_dataset_4_proj_clean_bg/landmarks/"
 
-cases = [f"copd{i}_highres" for i in range(1,11)]
+cases = [f"copd{i}_highres" for i in range(1, 11)]
 
 import argparse
+
 parser = argparse.ArgumentParser()
 parser.add_argument("weights_path")
 args = parser.parse_args()
@@ -34,23 +36,37 @@ net.eval()
 
 overall_1 = []
 overall_2 = []
+flips = []
 
 for case in cases:
     image_insp = itk.imread(f"{image_root}/{case}/{case}_INSP_STD_COPD_img.nii.gz")
     image_exp = itk.imread(f"{image_root}/{case}/{case}_EXP_STD_COPD_img.nii.gz")
     seg_insp = itk.imread(f"{image_root}/{case}/{case}_INSP_STD_COPD_label.nii.gz")
     seg_exp = itk.imread(f"{image_root}/{case}/{case}_EXP_STD_COPD_label.nii.gz")
-    
 
-    landmarks_insp = icon_registration.test_utils.read_copd_pointset(landmark_root + f"/{case.split('_')[0]}_300_iBH_xyz_r1.txt")
-    landmarks_exp = icon_registration.test_utils.read_copd_pointset(landmark_root + f"/{case.split('_')[0]}_300_eBH_xyz_r1.txt")
+    landmarks_insp = icon_registration.test_utils.read_copd_pointset(
+        landmark_root + f"/{case.split('_')[0]}_300_iBH_xyz_r1.txt"
+    )
+    landmarks_exp = icon_registration.test_utils.read_copd_pointset(
+        landmark_root + f"/{case.split('_')[0]}_300_eBH_xyz_r1.txt"
+    )
 
+    image_insp_preprocessed = (
+        icon_registration.pretrained_models.lung_network_preprocess(
+            image_insp, seg_insp
+        )
+    )
+    image_exp_preprocessed = (
+        icon_registration.pretrained_models.lung_network_preprocess(image_exp, seg_exp)
+    )
 
-    image_insp_preprocessed = icon_registration.pretrained_models.lung_network_preprocess(image_insp, seg_insp)
-    image_exp_preprocessed = icon_registration.pretrained_models.lung_network_preprocess(image_exp, seg_exp)
-
-    phi_AB, phi_BA = icon_registration.itk_wrapper.register_pair(net, image_insp_preprocessed, image_exp_preprocessed, finetune_steps=50)
-
+    phi_AB, phi_BA, loss = icon_registration.itk_wrapper.register_pair(
+        net,
+        image_insp_preprocessed,
+        image_exp_preprocessed,
+        finetune_steps=None,
+        return_artifacts=True,
+    )
     dists = []
     for i in range(len(landmarks_exp)):
         px, py = (
@@ -69,10 +85,15 @@ for case in cases:
     dists.append(np.sqrt(np.sum((px - py) ** 2)))
     utils.log(f"Mean error on {case}: ", np.mean(dists))
 
-    
     overall_2.append(np.mean(dists))
+
+    utils.log("flips:", loss.flips)
+
+    flips.append(loss.flips)
 
 
 utils.log("overall:")
 utils.log(np.mean(overall_1))
 utils.log(np.mean(overall_2))
+utils.log("flips:", np.mean(flips))
+utils.log("flips / prod(imnput_shape", np.mean(flips) / np.prod(input_shape))

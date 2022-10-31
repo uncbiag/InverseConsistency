@@ -4,6 +4,7 @@ import torch
 import torch.nn.functional as F
 
 from icon_registration import config
+from icon_registration.losses import to_floats
 
 
 def finetune_execute(model, image_A, image_B, steps):
@@ -12,15 +13,17 @@ def finetune_execute(model, image_A, image_B, steps):
     for _ in range(steps):
         optimizer.zero_grad()
         loss_tuple = model(image_A, image_B)
+        print(loss_tuple)
         loss_tuple[0].backward()
         optimizer.step()
     with torch.no_grad():
-        model(image_A, image_B)
+        loss = model(image_A, image_B)
     model.load_state_dict(state_dict)
+    return loss
 
 
 def register_pair(
-    model, image_A, image_B, finetune_steps=None
+    model, image_A, image_B, finetune_steps=None, return_artifacts=False
 ) -> "(itk.CompositeTransform, itk.CompositeTransform)":
 
     assert isinstance(image_A, itk.Image)
@@ -46,11 +49,14 @@ def register_pair(
     B_resized = F.interpolate(
         B_trch, size=shape[2:], mode="trilinear", align_corners=False
     )
+    if finetune_steps == 0:
+        raise Exception("To indicate no finetune_steps, pass finetune_steps=None")
+
     if finetune_steps == None:
         with torch.no_grad():
-            model(A_resized, B_resized)
+            loss = model(A_resized, B_resized)
     else:
-        finetune_execute(model, A_resized, B_resized, finetune_steps)
+        loss = finetune_execute(model, A_resized, B_resized, finetune_steps)
 
     # phi_AB and phi_BA are [1, 3, H, W, D] pytorch tensors representing the forward and backward
     # maps computed by the model
@@ -58,10 +64,14 @@ def register_pair(
     phi_BA = model.phi_BA(model.identity_map)
 
     # the parameters ident, image_A, and image_B are used for their metadata
-    return (
+    itk_transforms = (
         create_itk_transform(phi_AB, model.identity_map, image_A, image_B),
         create_itk_transform(phi_BA, model.identity_map, image_B, image_A),
     )
+    if not return_artifacts:
+        return itk_transforms
+    else:
+        return itk_transforms + (to_floats(loss),)
 
 
 def create_itk_transform(phi, ident, image_A, image_B) -> "itk.CompositeTransform":
