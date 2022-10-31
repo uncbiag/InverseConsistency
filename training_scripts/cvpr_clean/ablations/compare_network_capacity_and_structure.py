@@ -16,14 +16,14 @@ import icon_registration as icon
 import icon_registration.data as data
 from cvpr_network import GradientICONSparse
 
-BATCH_SIZE= 1
+BATCH_SIZE = 4
 GPUS = 4
 GPU_IDs = [0,1,2,3]
-#ITERATIONS_PER_STEP = 50000
-ITERATIONS_PER_STEP = 301
+ITERATIONS_PER_STEP = 50000
 
 parser = ArgumentParser()
 parser.add_argument("--exp", type=str, default="debug", help="name of the experiment")
+parser.add_argument("--output_folder", type=str, default="./results/", help="the path to the output folder")
 parser.add_argument("--unet_type", type=str, default="vm", help="value can be [vm, icon]")
 parser.add_argument("--multi_res", type=int, default=0, help="Set to 0 if do not use multi-resolutions structure.")
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    footsteps.initialize(output_root="./results/", run_name=args.exp)
+    footsteps.initialize(output_root=args.output_folder, run_name=args.exp)
 
     timestamp = '{:%Y_%m_%d_%H_%M_%S}'.format(datetime.now())
     exp_folder_path = footsteps.output_dir
