@@ -316,7 +316,7 @@ class BendingEnergyNet(network_wrappers.RegistrationModule):
         self.phi_AB = self.regis_net(image_A, image_B)
         self.phi_AB_vectorfield = self.phi_AB(self.identity_map)
         
-        similarity_loss = self.compute_similarity_measure(
+        similarity_loss = 2 * self.compute_similarity_measure(
             self.phi_AB_vectorfield, image_A, image_B
         )
 
@@ -329,13 +329,54 @@ class BendingEnergyNet(network_wrappers.RegistrationModule):
         transform_magnitude = torch.mean(
             (self.identity_map - self.phi_AB_vectorfield) ** 2
         )
-        return ICONLoss(
+        return BendingLoss(
             all_loss,
             bending_energy_loss,
             similarity_loss,
             transform_magnitude,
-            flips(self.phi_BA_vectorfield),
+            flips(self.phi_AB_vectorfield),
         )
+
+    def prepare_for_viz(self, image_A, image_B):
+        self.phi_AB = self.regis_net(image_A, image_B)
+        self.phi_AB_vectorfield = self.phi_AB(self.identity_map)
+        self.phi_BA = self.regis_net(image_B, image_A)
+        self.phi_BA_vectorfield = self.phi_BA(self.identity_map)
+
+        self.warped_image_A = self.as_function(image_A)(self.phi_AB_vectorfield)
+        self.warped_image_B = self.as_function(image_B)(self.phi_BA_vectorfield)
+
+class DiffusionRegularizedNet(BendingEnergyNet):
+    def compute_bending_energy_loss(self, phi_AB_vectorfield):
+        phi_AB_vectorfield = self.identity_map - phi_AB_vectorfield
+        if len(self.identity_map.shape) == 3:
+            bending_energy = torch.mean((
+                - phi_AB_vectorfield[:, :, 1:]
+                + phi_AB_vectorfield[:, :, 1:-1]
+            )**2)
+
+        elif len(self.identity_map.shape) == 4:
+            bending_energy = torch.mean((
+                - phi_AB_vectorfield[:, :, 1:]
+                + phi_AB_vectorfield[:, :, :-1]
+            )**2) + torch.mean((
+                - phi_AB_vectorfield[:, :, :, 1:]
+                + phi_AB_vectorfield[:, :, :, :-1]
+            )**2)
+        elif len(self.identity_map.shape) == 5:
+            bending_energy = torch.mean((
+                - phi_AB_vectorfield[:, :, 1:]
+                + phi_AB_vectorfield[:, :, :-1]
+            )**2) + torch.mean((
+                - phi_AB_vectorfield[:, :, :, 1:]
+                + phi_AB_vectorfield[:, :, :, :-1]
+            )**2) + torch.mean((
+                - phi_AB_vectorfield[:, :, :, :, 1:]
+                + phi_AB_vectorfield[:, :, :, :, :-1]
+            )**2)
+
+
+        return bending_energy
 
 def normalize(image):
     dimension = len(image.shape) - 2
