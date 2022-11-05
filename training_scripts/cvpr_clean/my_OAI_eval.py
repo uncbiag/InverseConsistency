@@ -162,16 +162,16 @@ for test_pair_path in test_pair_paths:
         net, img_tensor_A.cuda(), img_tensor_B.cuda(), image_A, image_B, finetune_steps=None, return_artifacts=True
     )
 
-    interpolator = itk.NearestNeighborInterpolateImageFunction.New(segmentation_A)
+    # interpolator = itk.NearestNeighborInterpolateImageFunction.New(segmentation_A)
 
-    warped_segmentation_A = itk.resample_image_filter(
-        segmentation_A,
-        transform=phi_AB,
-        interpolator=interpolator,
-        use_reference_image=True,
-        reference_image=segmentation_B,
-    )
-    mean_dice = utils.itk_mean_dice(segmentation_B, warped_segmentation_A)
+    # warped_segmentation_A = itk.resample_image_filter(
+    #     segmentation_A,
+    #     transform=phi_AB,
+    #     interpolator=interpolator,
+    #     use_reference_image=True,
+    #     reference_image=segmentation_B,
+    # )
+    # mean_dice = utils.itk_mean_dice(segmentation_B, warped_segmentation_A)
 
     seg_tensor_A = torch.tensor(itk.GetArrayFromImage(segmentation_A))[None, None, ...]
     seg_tensor_B = torch.tensor(itk.GetArrayFromImage(segmentation_B))[None, None, ...]
