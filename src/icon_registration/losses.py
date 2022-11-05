@@ -279,7 +279,7 @@ class BendingEnergyNet(network_wrappers.RegistrationModule):
             )**2)
         
 
-        return bending_energy
+        return bending_energy * self.identity_map.shape[2] ** 4
 
     def compute_similarity_measure(self, phi_AB_vectorfield, image_A, image_B):
 
@@ -376,7 +376,7 @@ class DiffusionRegularizedNet(BendingEnergyNet):
             )**2)
 
 
-        return bending_energy
+        return bending_energy * self.identity_map.shape[2] **2
 
 def normalize(image):
     dimension = len(image.shape) - 2
