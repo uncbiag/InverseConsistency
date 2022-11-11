@@ -24,10 +24,10 @@ nb_feats = ref.shape[-1]
 
 
 with tf.device(vxm.tf.utils.setup_device("0")[0]):
-   # model_path = "/playpen-raid1/tgreer/voxelmorph/brains-dice-vel-0.5-res-16-256f.h5"
+    model_path = "/playpen-raid1/tgreer/voxelmorph/brains-dice-vel-0.5-res-16-256f.h5"
 
     #model_path = "/playpen-raid1/tgreer/voxelmorph/vxm_dense_brain_T1_3D_mse.h5"
-    model_path = "shapes-dice-vel-3-res-8-16-32-256f.h5"
+    #model_path = "shapes-dice-vel-3-res-8-16-32-256f.h5"
     regis_net = vxm.networks.VxmDense.load(model_path)
     warper_label = vxm.networks.Transform(
           ref.shape[1:-1], interp_method="nearest"
@@ -87,9 +87,9 @@ with tf.device(vxm.tf.utils.setup_device("0")[0]):
         subprocess.run("mri_vol2vol --mov imageB_orig.nii.gz --o B_affine.nii.gz --lta B_Affine.lta --targ ref.nii.gz", shell=True)
         subprocess.run("mri_vol2vol --mov segB_orig.nii.gz --o Bseg_affine.nii.gz --lta B_Affine.lta --targ ref.nii.gz --nearest --keep-precision", shell=True)
 
-        cmd = """python /playpen-raid1/tgreer/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A.nii.gz --moving B.nii.gz --moved out.nii.gz --model /playpen-raid1/tgreer/voxelmorph/brains-dice-vel-0.5-res-16-256f.h5 --warp warp.nii.gz"""
+        #cmd = """python /playpen-raid1/tgreer/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A.nii.gz --moving B.nii.gz --moved out.nii.gz --model /playpen-raid1/tgreer/voxelmorph/brains-dice-vel-0.5-res-16-256f.h5 --warp warp.nii.gz"""
         #cmd = """python /playpen-raid1/tgreer/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A_affine.nii.gz --moving B_affine.nii.gz --moved out.nii.gz --model shapes-dice-vel-3-res-8-16-32-256f.h5 --warp warp.nii.gz"""
-        subprocess.run(cmd, shell=True)
+        #subprocess.run(cmd, shell=True)
 
         import voxelmorph
         import voxelmorph as vxm
