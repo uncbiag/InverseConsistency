@@ -186,6 +186,7 @@ def read_affine(lta_path=""):
         
     return np.array(affine, np.float)
 
+prealign_folder = "/playpen-raid2/lin.tian/projects/icon_lung/ICON/results/debug/eval_HCP-43"
 
 with tf.device(vxm.tf.utils.setup_device("0")[0]):
     # model_path = "/playpen-raid1/tgreer/voxelmorph/brains-dice-vel-0.5-res-16-256f.h5"
@@ -196,6 +197,7 @@ with tf.device(vxm.tf.utils.setup_device("0")[0]):
     regis_net = vxm.networks.VxmDense.load(model_path)
 
     dices = []
+    flips = []
 
 
     from HCP_segs import atlas_registered, get_brain_image, get_sub_seg
@@ -204,42 +206,49 @@ with tf.device(vxm.tf.utils.setup_device("0")[0]):
         sA, sB = [itk.image_from_array(s.numpy()) for s in (sA, sB)]
         return utils.itk_mean_dice(sA, sB)
 
+    
 
     random.seed(1)
     for _ in range(100):
         n_A, n_B = (random.choice(atlas_registered) for _ in range(2))
-        image_A, image_B = (
-                itk.imread(
-                    f"/playpen-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz"
-                )
-            for n in (n_A, n_B)
-        )
+        if prealign_folder != "" and os.path.exists(prealign_folder):
+            pair_dir = f"{prealign_folder}/{n_A}_{n_B}"
+        else:
+            image_A, image_B = (
+                    itk.imread(
+                        f"/playpen-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz"
+                    )
+                for n in (n_A, n_B)
+            )
 
-        segmentation_A, segmentation_B = (get_sub_seg(n) for n in (n_A, n_B))
+            segmentation_A, segmentation_B = (get_sub_seg(n) for n in (n_A, n_B))
 
-        pair_dir = f"{footsteps.output_dir}/{n_A}_{n_B}"
-        if not os.path.exists(pair_dir):
-            os.mkdir(pair_dir)
-        itk.imwrite(segmentation_A, f"{pair_dir}/segA_orig.nii.gz")
-        itk.imwrite(image_A, f"{pair_dir}/imageA_orig.nii.gz")
-        itk.imwrite(segmentation_B, f"{pair_dir}/segB_orig.nii.gz")
-        itk.imwrite(image_B, f"{pair_dir}/imageB_orig.nii.gz")
+            pair_dir = f"{footsteps.output_dir}/{n_A}_{n_B}"
+            if not os.path.exists(pair_dir):
+                os.mkdir(pair_dir)
+            itk.imwrite(segmentation_A, f"{pair_dir}/segA_orig.nii.gz")
+            itk.imwrite(image_A, f"{pair_dir}/imageA_orig.nii.gz")
+            itk.imwrite(segmentation_B, f"{pair_dir}/segB_orig.nii.gz")
+            itk.imwrite(image_B, f"{pair_dir}/imageB_orig.nii.gz")
 
-        # Affine pre-aling to reference image
-        subprocess.run(f"mri_robust_register --mov {pair_dir}/imageA_orig.nii.gz --dst ref.nii.gz -lta {pair_dir}/A_Affine.lta --satit --iscale --verbose 0", shell=True)
-        subprocess.run(f"mri_robust_register --mov {pair_dir}/imageA_orig.nii.gz --dst ref.nii.gz -lta {pair_dir}/A_Affine.lta --satit --iscale --ixform {pair_dir}/A_Affine.lta --affine --verbose 0", shell=True)
-        subprocess.run(f"mri_vol2vol --mov {pair_dir}/imageA_orig.nii.gz --o {pair_dir}/A_affine.nii.gz --lta {pair_dir}/A_Affine.lta --targ ref.nii.gz", shell=True)
-        subprocess.run(f"mri_vol2vol --mov {pair_dir}/segA_orig.nii.gz --o {pair_dir}/Aseg_affine.nii.gz --lta {pair_dir}/A_Affine.lta --targ ref.nii.gz --nearest --keep-precision", shell=True)
+            # Affine pre-aling to reference image
+            subprocess.run(f"mri_robust_register --mov {pair_dir}/imageA_orig.nii.gz --dst ref.nii.gz -lta {pair_dir}/A_Affine.lta --satit --iscale --verbose 0", shell=True)
+            subprocess.run(f"mri_robust_register --mov {pair_dir}/imageA_orig.nii.gz --dst ref.nii.gz -lta {pair_dir}/A_Affine.lta --satit --iscale --ixform {pair_dir}/A_Affine.lta --affine --verbose 0", shell=True)
+            subprocess.run(f"mri_vol2vol --mov {pair_dir}/imageA_orig.nii.gz --o {pair_dir}/A_affine.nii.gz --lta {pair_dir}/A_Affine.lta --targ ref.nii.gz", shell=True)
+            subprocess.run(f"mri_vol2vol --mov {pair_dir}/segA_orig.nii.gz --o {pair_dir}/Aseg_affine.nii.gz --lta {pair_dir}/A_Affine.lta --targ ref.nii.gz --nearest --keep-precision", shell=True)
 
-        subprocess.run(f"mri_robust_register --mov {pair_dir}/imageB_orig.nii.gz --dst ref.nii.gz -lta {pair_dir}/B_Affine.lta --satit --iscale --verbose 0", shell=True)
-        subprocess.run(f"mri_robust_register --mov {pair_dir}/imageB_orig.nii.gz --dst ref.nii.gz -lta {pair_dir}/B_Affine.lta --satit --iscale --ixform {pair_dir}/B_Affine.lta --affine --verbose 0", shell=True)
-        subprocess.run(f"mri_vol2vol --mov {pair_dir}/imageB_orig.nii.gz --o {pair_dir}/B_affine.nii.gz --lta {pair_dir}/B_Affine.lta --targ ref.nii.gz", shell=True)
-        subprocess.run(f"mri_vol2vol --mov {pair_dir}/segB_orig.nii.gz --o {pair_dir}/Bseg_affine.nii.gz --lta {pair_dir}/B_Affine.lta --targ ref.nii.gz --nearest --keep-precision", shell=True)
+            subprocess.run(f"mri_robust_register --mov {pair_dir}/imageB_orig.nii.gz --dst ref.nii.gz -lta {pair_dir}/B_Affine.lta --satit --iscale --verbose 0", shell=True)
+            subprocess.run(f"mri_robust_register --mov {pair_dir}/imageB_orig.nii.gz --dst ref.nii.gz -lta {pair_dir}/B_Affine.lta --satit --iscale --ixform {pair_dir}/B_Affine.lta --affine --verbose 0", shell=True)
+            subprocess.run(f"mri_vol2vol --mov {pair_dir}/imageB_orig.nii.gz --o {pair_dir}/B_affine.nii.gz --lta {pair_dir}/B_Affine.lta --targ ref.nii.gz", shell=True)
+            subprocess.run(f"mri_vol2vol --mov {pair_dir}/segB_orig.nii.gz --o {pair_dir}/Bseg_affine.nii.gz --lta {pair_dir}/B_Affine.lta --targ ref.nii.gz --nearest --keep-precision", shell=True)
 
         #cmd = """python /playpen-raid1/tgreer/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A.nii.gz --moving B.nii.gz --moved out.nii.gz --model /playpen-raid1/tgreer/voxelmorph/brains-dice-vel-0.5-res-16-256f.h5 --warp warp.nii.gz"""
         #cmd = """python /playpen-raid1/tgreer/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A_affine.nii.gz --moving B_affine.nii.gz --moved out.nii.gz --model shapes-dice-vel-3-res-8-16-32-256f.h5 --warp warp.nii.gz"""
         #subprocess.run(cmd, shell=True)
-
+        
+        output_dir = f"{footsteps.output_dir}/{n_A}_{n_B}"
+        if not os.path.exists(output_dir):
+            os.mkdir(output_dir)
         
         # Input data.
         mov = nib.load(f"{pair_dir}/A_affine.nii.gz")
@@ -311,7 +320,6 @@ with tf.device(vxm.tf.utils.setup_device("0")[0]):
         # Transform coordinates to the native moving voxel space. Subtract fixed
         # coordinates to obtain displacement from fixed to moving voxel space.
         x_out = net_to_mov[:-1, -1:] + (net_to_mov[:-1, :-1] @ x_out)
-        # x_out = tf.transpose(x_out)
 
         # Transform to before affine move
         mov_to_pre_mov = np.linalg.inv(pre_mov.affine)@np.linalg.inv(mov_affine_ras)@mov.affine
@@ -332,17 +340,20 @@ with tf.device(vxm.tf.utils.setup_device("0")[0]):
         fixed_np = fixed.get_data().squeeze()
 
         warped_seg = transform(mov, trans=trans_vox, shape=fixed_np.shape, interp_method='nearest').numpy()[0,:,:,:,0] 
-        save(f"{pair_dir}/warped_segA_orig.nii.gz", warped_seg, fixed.affine, int)
+        save(f"{output_dir}/warped_segA_orig.nii.gz", warped_seg, fixed.affine, int)
         
         overlap = vxm.py.utils.dice(fixed_np, warped_seg, labels=list(range(1, 29)))
-
         mean_dice = np.mean(overlap)
-    
+
+        jd = vxm.py.utils.jacobian_determinant(trans_vox)
+        flip = np.mean(jd<0) * 100.0
+
+        flips.append(flip)
         dices.append(mean_dice)
-        utils.log(f"############## mean DICE {n_A} to {n_B}: {mean_dice} | running DICE: {np.mean(dices)}")
+        utils.log(f"{_}/100 mean DICE {n_A} to {n_B}: {mean_dice} | running DICE: {np.mean(dices)} | Percentage: {flip} | running Per: {np.mean(flips)} ")
 
     utils.log("Mean DICE")
-    utils.log(f"Final DICE: {np.mean(dices)}")
+    utils.log(f"Final DICE: {np.mean(dices)} | final percentage of negative jacobian: {np.mean(flips)}")
 
 
 
