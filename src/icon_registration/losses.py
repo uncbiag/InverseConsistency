@@ -246,40 +246,59 @@ class BendingEnergyNet(network_wrappers.RegistrationModule):
         self.similarity = similarity
 
     def compute_bending_energy_loss(self, phi_AB_vectorfield):
+        '''
+        dxdx = [f[x+h, y] + f[x-h, y] - 2 * f[x, y]]/(h**2)
+        dxdy = [f[x+h, y+h] + f[x-h, y-h] - f[x+h, y-h] - f[x-h, y+h]]/(4*h**2)
+        BE_2d = |dxdx| + |dydy| + 2 * |dxdy|
+        psudo code: BE_2d = [torch.mean(dxdx**2) + torch.mean(dydy**2) + 2 * torch.mean(dxdy**2)]/4.0  
+        BE_3d = |dxdx| + |dydy| + |dzdz| + 2 * |dxdy| + 2 * |dydz| + 2 * |dxdz|
+        '''
         if len(self.identity_map.shape) == 3:
-            bending_energy = torch.mean((
-                - phi_AB_vectorfield[:, :, 2:] 
-                + 2*phi_AB_vectorfield[:, :, 1:-1]
-                - phi_AB_vectorfield[:, :, :-2]
-            )**2)
+            dxdx = (phi_AB_vectorfield[:, :, 2:] 
+                - 2*phi_AB_vectorfield[:, :, 1:-1]
+                + phi_AB_vectorfield[:, :, :-2]) / self.spacing[0]**2
+            bending_energy = torch.mean((dxdx)**2)
             
         elif len(self.identity_map.shape) == 4:
-            bending_energy = torch.mean((
-                - phi_AB_vectorfield[:, :, 2:] 
-                + 2*phi_AB_vectorfield[:, :, 1:-1]
-                - phi_AB_vectorfield[:, :, :-2]
-            )**2) + torch.mean((
-                - phi_AB_vectorfield[:, :, :, 2:] 
-                + 2*phi_AB_vectorfield[:, :, :, 1:-1]
-                - phi_AB_vectorfield[:, :, :, :-2]
-            )**2)
+            dxdx = (phi_AB_vectorfield[:, :, 2:] 
+                - 2*phi_AB_vectorfield[:, :, 1:-1]
+                + phi_AB_vectorfield[:, :, :-2]) / self.spacing[0]**2
+            dydy = (phi_AB_vectorfield[:, :, :, 2:] 
+                - 2*phi_AB_vectorfield[:, :, :, 1:-1]
+                + phi_AB_vectorfield[:, :, :, :-2]) / self.spacing[1]**2
+            dxdy = (phi_AB_vectorfield[:, :, 2:, 2:] 
+                + phi_AB_vectorfield[:, :, :-2, :-2] 
+                - phi_AB_vectorfield[:, :, 2:, :-2]
+                - phi_AB_vectorfield[:, :, :-2, 2:]) / (4.0*self.spacing[0]*self.spacing[1])
+            bending_energy = (torch.mean(dxdx**2) + torch.mean(dydy**2) + 2*torch.mean(dxdy**2)) / 4.0
         elif len(self.identity_map.shape) == 5:
-            bending_energy = torch.mean((
-                - phi_AB_vectorfield[:, :, 2:] 
-                + 2*phi_AB_vectorfield[:, :, 1:-1]
-                - phi_AB_vectorfield[:, :, :-2]
-            )**2) + torch.mean((
-                - phi_AB_vectorfield[:, :, :, 2:] 
-                + 2*phi_AB_vectorfield[:, :, :, 1:-1]
-                - phi_AB_vectorfield[:, :, :, :-2]
-            )**2) + torch.mean((
-                - phi_AB_vectorfield[:, :, :, :, 2:] 
-                + 2*phi_AB_vectorfield[:, :, :, :, 1:-1]
-                - phi_AB_vectorfield[:, :, :, :, :-2]
-            )**2)
+            dxdx = (phi_AB_vectorfield[:, :, 2:] 
+                - 2*phi_AB_vectorfield[:, :, 1:-1]
+                + phi_AB_vectorfield[:, :, :-2]) / self.spacing[0]**2
+            dydy = (phi_AB_vectorfield[:, :, :, 2:] 
+                - 2*phi_AB_vectorfield[:, :, :, 1:-1]
+                + phi_AB_vectorfield[:, :, :, :-2]) / self.spacing[1]**2
+            dzdz = (phi_AB_vectorfield[:, :, :, :, 2:] 
+                - 2*phi_AB_vectorfield[:, :, :, :, 1:-1]
+                + phi_AB_vectorfield[:, :, :, :, :-2]) / self.spacing[2]**2
+            dxdy = (phi_AB_vectorfield[:, :, 2:, 2:] 
+                + phi_AB_vectorfield[:, :, :-2, :-2] 
+                - phi_AB_vectorfield[:, :, 2:, :-2]
+                - phi_AB_vectorfield[:, :, :-2, 2:]) / (4.0*self.spacing[0]*self.spacing[1])
+            dydz = (phi_AB_vectorfield[:, :, :, 2:, 2:] 
+                + phi_AB_vectorfield[:, :, :, :-2, :-2] 
+                - phi_AB_vectorfield[:, :, :, 2:, :-2]
+                - phi_AB_vectorfield[:, :, :, :-2, 2:]) / (4.0*self.spacing[1]*self.spacing[2])
+            dxdz = (phi_AB_vectorfield[:, :, 2:, :, 2:] 
+                + phi_AB_vectorfield[:, :, :-2, :, :-2] 
+                - phi_AB_vectorfield[:, :, 2:, :, :-2]
+                - phi_AB_vectorfield[:, :, :-2, :, 2:]) / (4.0*self.spacing[0]*self.spacing[2])
+
+            bending_energy = ((dxdx**2).mean() + (dydy**2).mean() + (dzdz**2).mean() 
+                    + 2.*(dxdy**2).mean() + 2.*(dydz**2).mean() + 2.*(dxdz**2).mean()) / 9.0
         
 
-        return bending_energy * self.identity_map.shape[2] ** 4
+        return bending_energy
 
     def compute_similarity_measure(self, phi_AB_vectorfield, image_A, image_B):
 
