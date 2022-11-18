@@ -6,7 +6,7 @@ Python:
 /name-raid1/name/anaconda3/envs/ICON_newdir/bin/python
 Git Hash:
 1.0.0-30-g1a6a727
-https://github.com/uncbiag/ICON/tree/1.0.0-30-g1a6a727
+https://github.com/name/ICON/tree/1.0.0-30-g1a6a727
 Uncommitted changes:
 diff --git a/training_scripts/cvpr_clean/COPDGene_eval.py b/training_scripts/cvpr_clean/COPDGene_eval.py
 index e69de29..9cc3602 100644

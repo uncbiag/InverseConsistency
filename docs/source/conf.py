@@ -68,7 +68,7 @@ def linkcode_resolve(domain, info):
         return None
     filename = info["module"].replace(".", "/")
     number = line_number(info)
-    return "https://github.com/uncbiag/ICON/blob/master/src/%s.py#L%d" % (
+    return "https://github.com/name/ICON/blob/master/src/%s.py#L%d" % (
         filename,
         number,
     )

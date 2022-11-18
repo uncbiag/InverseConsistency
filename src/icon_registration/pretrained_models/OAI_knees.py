@@ -46,7 +46,7 @@ def OAI_knees_registration_model(pretrained=True):
             os.makedirs("network_weights", exist_ok=True)
 
             urllib.request.urlretrieve(
-                "https://github.com/uncbiag/ICON/releases/download/pretrained_oai_model/OAI_knees_ICON_model.pth",
+                "https://github.com/name/ICON/releases/download/pretrained_oai_model/OAI_knees_ICON_model.pth",
                 weights_location,
             )
 
@@ -97,7 +97,7 @@ def OAI_knees_gradICON_model(pretrained=True):
             import urllib.request
 
             urllib.request.urlretrieve(
-                "https://github.com/uncbiag/ICON/releases/download/pretrained_oai_model/OAI_knees_GradICON_model.pth",
+                "https://github.com/name/ICON/releases/download/pretrained_oai_model/OAI_knees_GradICON_model.pth",
                 weights_location,
             )
 

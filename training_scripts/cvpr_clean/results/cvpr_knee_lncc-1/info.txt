@@ -6,7 +6,7 @@ Python:
 /name-raid1/name/anaconda3/envs/ICON_newdir/bin/python
 Git Hash:
 1.0.0-45-gf064861
-https://github.com/uncbiag/ICON/tree/1.0.0-45-gf064861
+https://github.com/name/ICON/tree/1.0.0-45-gf064861
 Uncommitted changes:
 diff --git a/src/icon_registration/itk_wrapper.py b/src/icon_registration/itk_wrapper.py
 index c73ea83..164fb37 100644

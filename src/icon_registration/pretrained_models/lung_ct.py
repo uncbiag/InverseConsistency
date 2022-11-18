@@ -78,7 +78,7 @@ def LungCT_registration_model(pretrained=True):
 
             os.makedirs("network_weights", exist_ok=True)
             urllib.request.urlretrieve(
-                "https://github.com/uncbiag/ICON/releases/download/pretrained_lung_model/lung_model_wms.zip",
+                "https://github.com/name/ICON/releases/download/pretrained_lung_model/lung_model_wms.zip",
                 "network_weights/lung_model_wms.zip",
             )
             shutil.unpack_archive(

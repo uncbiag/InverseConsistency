@@ -5,7 +5,7 @@ Often, a downstream clinical registration task requires warping landmarks, or wa
 
 To demonstrate this, we will register a pair of lung images from the COPD gene dataset, and then use the resulting transform to move landmarks in physical coordinates.
 
-`notebook <https://github.com/uncbiag/ICON/blob/master/notebooks/ICON_lung_demo.ipynb>`_
+`notebook <https://github.com/name/ICON/blob/master/notebooks/ICON_lung_demo.ipynb>`_
 
 Setup
 -----

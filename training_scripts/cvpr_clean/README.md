@@ -8,7 +8,7 @@
 
 (DONE)Add correct knee flipping to ./OAI\_eval.py
 
-Create lung evaluation script (not notebook) based on https://colab.research.google.com/github/uncbiag/ICON/blob/master/notebooks/ICON_lung_demo.ipynb
+Create lung evaluation script (not notebook) based on https://colab.research.google.com/github/name/ICON/blob/master/notebooks/ICON_lung_demo.ipynb
 
 (DONE)Create brain evaluation script (not notebook) based on ../../notebooks/brain_ants_comparison.ipynb
 

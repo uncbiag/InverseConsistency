@@ -1,4 +1,4 @@
-# This cell contains the code from https://github.com/uncbiag/mermaid
+# This cell contains the code from https://github.com/name/mermaid
 # that defines the functions compute_warped_image_multiNC
 # which we use for composing maps and identity_map_multiN which we use
 # to get an identity map.
