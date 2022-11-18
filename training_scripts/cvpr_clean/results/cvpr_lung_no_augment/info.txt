@@ -3,7 +3,7 @@ train_lung.py
 System:
 biag-gpu6.cs.unc.edu
 Python:
-/author-raid1/author/anaconda3/envs/ICON_newdir/bin/python
+/name-raid1/name/anaconda3/envs/ICON_newdir/bin/python
 Git Hash:
 1.0.0-45-gf064861
 https://github.com/uncbiag/ICON/tree/1.0.0-45-gf064861
@@ -47,7 +47,7 @@ index 9c93e5a..b2a1994 100644
 --- a/training_scripts/cvpr_clean/HCP_eval.py
 +++ b/training_scripts/cvpr_clean/HCP_eval.py
 @@ -48,7 +48,7 @@ for _ in range(20):
-     image_A, image_B = (preprocess(itk.imread(f"/author-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz")) for n in (n_A, n_B))
+     image_A, image_B = (preprocess(itk.imread(f"/name-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz")) for n in (n_A, n_B))
  
      #import pdb; pdb.set_trace()
 -    phi_AB, phi_BA = itk_wrapper.register_pair(net, image_A, image_B, finetune_steps=None)
@@ -119,4 +119,4 @@ index cc0f5ea..9e3022e 100644
  class lung_dataloader():
      def __init__(self, data_path, scale, batch_size, with_augment=False) -> None:
 Current working dir:
-/author-raid1/author/ICON/training_scripts/cvpr_clean
+/name-raid1/name/ICON/training_scripts/cvpr_clean

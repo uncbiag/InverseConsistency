@@ -15,8 +15,8 @@ import icon_registration.itk_wrapper
 import icon_registration.test_utils
 import icon_registration.pretrained_models.lung_ct
 
-image_root = "/author-raid1/author/data/lung/dirlab_highres_350"
-landmark_root = "/author-raid1/author/data/lung/reg_lung_2d_3d_1000_dataset_4_proj_clean_bg/landmarks/"
+image_root = "/name-raid1/name/data/lung/dirlab_highres_350"
+landmark_root = "/name-raid1/name/data/lung/reg_lung_2d_3d_1000_dataset_4_proj_clean_bg/landmarks/"
 
 cases = [f"copd{i}_highres" for i in range(1, 11)]
 

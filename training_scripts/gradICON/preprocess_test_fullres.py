@@ -18,7 +18,7 @@ import numpy as np
 
 ds = []
 for tt in tqdm.tqdm(test_pair_paths):
-    tt = tt.replace("author", "author-raid")
+    tt = tt.replace("name", "name-raid")
     tt = tt.split()
     data = []
     for t in tt:
@@ -42,4 +42,4 @@ for tt in tqdm.tqdm(test_pair_paths):
 
     ds.append([iA, iB, cA, cB])
 
-torch.save(ds, "/author/author/knees_test_set_fullres")
+torch.save(ds, "/name/name/knees_test_set_fullres")

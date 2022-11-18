@@ -1,11 +1,11 @@
 import glob
-data_root = "/author-raid2/Data/HCP/"
+data_root = "/name-raid2/Data/HCP/"
 
 image_paths = glob.glob(
-  "/author-raid2/Data/HCP/HCP_1200/*/T1w/T1w_acpc_dc.nii.gz")
+  "/name-raid2/Data/HCP/HCP_1200/*/T1w/T1w_acpc_dc.nii.gz")
 #print(image_paths)
 test_paths = glob.glob(
-  "/author-raid2/Data/HCP/manual_subcortical_segmentations_BWH/*")
+  "/name-raid2/Data/HCP/manual_subcortical_segmentations_BWH/*")
 test_set = set([s.split("/")[-1] for s in test_paths])
 
 all_names = [path.split("/")[-3] for path in image_paths]

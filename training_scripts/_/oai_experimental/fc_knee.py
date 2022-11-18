@@ -29,7 +29,7 @@ net = inverseConsistentNet.InverseConsistentNet(
 net.assign_identity_map(input_shape)
 
 
-knees = torch.load("/author/author/knees_big_train_set")
+knees = torch.load("/name/name/knees_big_train_set")
 trained_weights = torch.load("results/fc_smol_knee/knee_aligner_resi_net30000")
 network_wrappers.adjust_batch_size(net, 16)
 net.load_state_dict(trained_weights)

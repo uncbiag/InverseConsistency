@@ -55,7 +55,7 @@ def augment(image_A, image_B):
 if __name__ == "__main__":
     footsteps.initialize()
 
-    dataset = data.get_learn2reg_lungCT_dataset("/author-raid2/author/data/learn2reg/NLST", clamp=[-1000,-200], downscale=1)
+    dataset = data.get_learn2reg_lungCT_dataset("/name-raid2/name/data/learn2reg/NLST", clamp=[-1000,-200], downscale=1)
     def batch_function():
         a, b = make_batch_paired(dataset.tensors[0], GPUS*BATCH_SIZE)
         a, b = augment(a, b)

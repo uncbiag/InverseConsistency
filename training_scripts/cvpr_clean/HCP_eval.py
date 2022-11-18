@@ -35,17 +35,17 @@ net.eval()
 dices = []
 
 import glob
-paths = glob.glob("/author-raid1/author/Subcortical_Atlas_Fusion2/*WarpedLabels*")
+paths = glob.glob("/name-raid1/name/Subcortical_Atlas_Fusion2/*WarpedLabels*")
 atlas_registered = [p.split("/malf3")[-1].split("_")[0] for p in paths]
 
 def get_sub_seg(n):
-    path = f"/author-raid1/author/Subcortical_Atlas_Fusion2/{n}_label.nii.gz"
+    path = f"/name-raid1/name/Subcortical_Atlas_Fusion2/{n}_label.nii.gz"
     return itk.imread(path)
 
 random.seed(1)
 for _ in range(20):
     n_A, n_B = (random.choice(atlas_registered) for _ in range(2))
-    image_A, image_B = (preprocess(itk.imread(f"/author-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz")) for n in (n_A, n_B))
+    image_A, image_B = (preprocess(itk.imread(f"/name-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz")) for n in (n_A, n_B))
 
     #import pdb; pdb.set_trace()
     phi_AB, phi_BA = itk_wrapper.register_pair(net, image_A, image_B, finetune_steps=None)

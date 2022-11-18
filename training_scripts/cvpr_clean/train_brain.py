@@ -24,7 +24,7 @@ if __name__ == "__main__":
     footsteps.initialize()
 
     dataset = torch.load(
-        "/author-ssd/author/ICON_brain_preprocessed_data/stripped/brain_train_2xdown_scaled"
+        "/name-ssd/name/ICON_brain_preprocessed_data/stripped/brain_train_2xdown_scaled"
     )
     batch_function = lambda : (make_batch(dataset), make_batch(dataset))
     cvpr_network.train_two_stage(input_shape, batch_function, GPUS, ITERATIONS_PER_STEP, BATCH_SIZE)

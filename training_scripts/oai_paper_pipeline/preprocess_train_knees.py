@@ -1,8 +1,8 @@
 import os
 
-with open("/author/author/splits/cross/full_resolution/train/pair_name_list.txt") as f:
+with open("/name/name/splits/cross/full_resolution/train/pair_name_list.txt") as f:
     train_pair_names = f.readlines()
-with open("/author/author/splits/cross/full_resolution/train/pair_path_list.txt") as f:
+with open("/name/name/splits/cross/full_resolution/train/pair_path_list.txt") as f:
     train_pair_paths = f.readlines()
 
 
@@ -22,7 +22,7 @@ import numpy as np
 
 ds = []
 for tt in tqdm.tqdm(list(iter(train_paths))):
-    tt = tt.replace("author", "author-raid")
+    tt = tt.replace("name", "name-raid")
     image = torch.tensor(np.asarray(itk.imread(tt)))
     if "RIGHT" in tt:
         image = torch.flip(image, [0])
@@ -37,4 +37,4 @@ for tt in tqdm.tqdm(list(iter(train_paths))):
 
     ds.append(iA)
 
-torch.save(ds, "/author/author/knees_big_2xdownsample_train_set")
+torch.save(ds, "/name/name/knees_big_2xdownsample_train_set")

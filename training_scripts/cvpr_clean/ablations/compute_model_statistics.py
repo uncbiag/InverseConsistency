@@ -29,7 +29,7 @@ def get_net(name, inshape):
         os.environ['VXM_BACKEND'] = 'pytorch'
         import voxelmorph as vxm
         # This line loads the trained model from a checkpoint. 
-        net = vxm.networks.VxmDense.load("/author-raid2/author/projects/icon_lung/ICON_lung_results/icon/comparing/vm_diff/2022_05_15_21_22_37/checkpoints/0100.pt", device=device)
+        net = vxm.networks.VxmDense.load("/name-raid2/name/projects/icon_lung/ICON_lung_results/icon/comparing/vm_diff/2022_05_15_21_22_37/checkpoints/0100.pt", device=device)
         
         # # If you do not have access to the checkpoint, use the following code.
         # # The following code will create a default VM model. The only difference from 
@@ -49,7 +49,7 @@ def get_net(name, inshape):
         # inshape = (1,1,176,176,176)
     elif name == 'lapirn_disp':
         # To assess LapIRN, you need to clone the LapIRN repo and add the path to the code to system path.
-        sys.path.append('/author-raid1/author/projects/pyReg/sotas/LapIRN/Code')
+        sys.path.append('/name-raid1/name/projects/pyReg/sotas/LapIRN/Code')
         from miccai2020_model_stage import Miccai2020_LDR_laplacian_unit_disp_add_lvl1, \
             Miccai2020_LDR_laplacian_unit_disp_add_lvl2, Miccai2020_LDR_laplacian_unit_disp_add_lvl3
         # Need to change the input shape during training, because LapIRN does not support odd number shape.
@@ -67,7 +67,7 @@ def get_net(name, inshape):
                                                             range_flow=0.4, model_lvl2=model_lvl2).cuda()
     elif name == 'lapirn_diff':
         # To assess LapIRN, you need to clone the LapIRN repo and add the path to the code to system path.
-        sys.path.append('/author-raid1/author/projects/pyReg/sotas/LapIRN/Code')
+        sys.path.append('/name-raid1/name/projects/pyReg/sotas/LapIRN/Code')
         from miccai2020_model_stage import Miccai2020_LDR_laplacian_unit_add_lvl1, \
             Miccai2020_LDR_laplacian_unit_add_lvl2, Miccai2020_LDR_laplacian_unit_add_lvl3
         # Need to change the input shape during training, because LapIRN does not support odd number shape.

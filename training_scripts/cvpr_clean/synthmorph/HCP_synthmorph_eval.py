@@ -183,17 +183,17 @@ def read_affine(lta_path=""):
     return np.array(affine, np.float)
 
 if __name__ == "__main__":
-    prealign_folder = "/author-raid2/author/projects/icon_lung/ICON/results/debug/eval_HCP-43"
+    prealign_folder = "/name-raid2/name/projects/icon_lung/ICON/results/debug/eval_HCP-43"
     ref = vxm.py.utils.load_volfile("ref.nii.gz", add_batch_axis = True, add_feat_axis = True)
 
     in_shape = ref.shape[1:-1]
     nb_feats = ref.shape[-1]
 
     with tf.device(vxm.tf.utils.setup_device("0")[0]):
-        # model_path = "/author-raid1/author/voxelmorph/brains-dice-vel-0.5-res-16-256f.h5"
-        model_path = "/author-raid2/author/projects/icon_lung/ICON/training_scripts/cvpr_clean/voxelmorph/shapes-dice-vel-3-res-8-16-32-256f.h5"
+        # model_path = "/name-raid1/name/voxelmorph/brains-dice-vel-0.5-res-16-256f.h5"
+        model_path = "/name-raid2/name/projects/icon_lung/ICON/training_scripts/cvpr_clean/voxelmorph/shapes-dice-vel-3-res-8-16-32-256f.h5"
 
-        #model_path = "/author-raid1/author/voxelmorph/vxm_dense_brain_T1_3D_mse.h5"
+        #model_path = "/name-raid1/name/voxelmorph/vxm_dense_brain_T1_3D_mse.h5"
         #model_path = "shapes-dice-vel-3-res-8-16-32-256f.h5"
         regis_net = vxm.networks.VxmDense.load(model_path)
 
@@ -217,7 +217,7 @@ if __name__ == "__main__":
             else:
                 image_A, image_B = (
                         itk.imread(
-                            f"/author-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz"
+                            f"/name-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz"
                         )
                     for n in (n_A, n_B)
                 )
@@ -243,8 +243,8 @@ if __name__ == "__main__":
                 subprocess.run(f"mri_vol2vol --mov {pair_dir}/imageB_orig.nii.gz --o {pair_dir}/B_affine.nii.gz --lta {pair_dir}/B_Affine.lta --targ ref.nii.gz", shell=True)
                 subprocess.run(f"mri_vol2vol --mov {pair_dir}/segB_orig.nii.gz --o {pair_dir}/Bseg_affine.nii.gz --lta {pair_dir}/B_Affine.lta --targ ref.nii.gz --nearest --keep-precision", shell=True)
 
-            #cmd = """python /author-raid1/author/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A.nii.gz --moving B.nii.gz --moved out.nii.gz --model /author-raid1/author/voxelmorph/brains-dice-vel-0.5-res-16-256f.h5 --warp warp.nii.gz"""
-            #cmd = """python /author-raid1/author/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A_affine.nii.gz --moving B_affine.nii.gz --moved out.nii.gz --model shapes-dice-vel-3-res-8-16-32-256f.h5 --warp warp.nii.gz"""
+            #cmd = """python /name-raid1/name/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A.nii.gz --moving B.nii.gz --moved out.nii.gz --model /name-raid1/name/voxelmorph/brains-dice-vel-0.5-res-16-256f.h5 --warp warp.nii.gz"""
+            #cmd = """python /name-raid1/name/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A_affine.nii.gz --moving B_affine.nii.gz --moved out.nii.gz --model shapes-dice-vel-3-res-8-16-32-256f.h5 --warp warp.nii.gz"""
             #subprocess.run(cmd, shell=True)
             
             output_dir = f"{footsteps.output_dir}/{n_A}_{n_B}"

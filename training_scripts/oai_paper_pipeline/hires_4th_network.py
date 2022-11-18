@@ -55,7 +55,7 @@ input_shape = [BATCH_SIZE, 1, 40 * SCALE, 96 * SCALE, 96 * SCALE]
 fourth_net.assign_identity_map(input_shape)
 
 
-knees = torch.load("/author/author/knees_big_2xdownsample_train_set")
+knees = torch.load("/name/name/knees_big_2xdownsample_train_set")
 
 if GPUS == 1:
     net_par = fourth_net.cuda()

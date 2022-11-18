@@ -216,7 +216,7 @@ def get_dataset_retina(
 def get_dataset_sunnyside(split, scale=1):
     import pickle
 
-    with open("/author/author/sunnyside.pickle", "rb") as f:
+    with open("/name/name/sunnyside.pickle", "rb") as f:
         array = pickle.load(f)
     if split == "train":
         array = array[1000:]
@@ -242,13 +242,13 @@ def get_dataset_sunnyside(split, scale=1):
 
 
 def get_cartilage_dataset():
-    cartilage = torch.load("/author/author/cartilage_uint8s.trch")
+    cartilage = torch.load("/name/name/cartilage_uint8s.trch")
     return cartilage
 
 
 def get_knees_dataset():
-    brains = torch.load("/author/author/kneestorch")
-    #    with open("/author/author/cartilage_eval_oriented", "rb") as f:
+    brains = torch.load("/name/name/kneestorch")
+    #    with open("/name/name/cartilage_eval_oriented", "rb") as f:
     #        cartilage = pickle.load(f)
 
     medbrains = []

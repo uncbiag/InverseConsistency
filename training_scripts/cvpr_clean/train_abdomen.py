@@ -56,7 +56,7 @@ def augment(image_A, image_B):
 if __name__ == "__main__":
     footsteps.initialize()
 
-    dataset = data.get_learn2reg_AbdomenCTCT_dataset("/author-raid2/author/data/learn2reg/AbdomenCTCT", clamp=[-200,500], downscale=1)
+    dataset = data.get_learn2reg_AbdomenCTCT_dataset("/name-raid2/name/data/learn2reg/AbdomenCTCT", clamp=[-200,500], downscale=1)
     print([[s, s.shape] for s in dataset.tensors])
 
     def batch_function():

@@ -40,7 +40,7 @@ def make_batch():
 if __name__ == "__main__":
     footsteps.initialize()
     brains = torch.load(
-        "/author-ssd/author/ICON_brain_preprocessed_data/stripped/brain_train_2xdown_scaled"
+        "/name-ssd/name/ICON_brain_preprocessed_data/stripped/brain_train_2xdown_scaled"
     )
     hires_net = make_network()
 

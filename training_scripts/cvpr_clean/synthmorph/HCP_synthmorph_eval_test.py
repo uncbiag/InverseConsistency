@@ -15,7 +15,7 @@ ref = vxm.py.utils.load_volfile("ref.nii.gz", add_batch_axis = True, add_feat_ax
 in_shape = ref.shape[1:-1]
 nb_feats = ref.shape[-1]
 
-data_folder = "/author-raid2/author/projects/icon_lung/ICON/results/eval_HCP/vm_shape"
+data_folder = "/name-raid2/name/projects/icon_lung/ICON/results/eval_HCP/vm_shape"
 with tf.device(vxm.tf.utils.setup_device("2")[0]):
 
     from HCP_segs import atlas_registered

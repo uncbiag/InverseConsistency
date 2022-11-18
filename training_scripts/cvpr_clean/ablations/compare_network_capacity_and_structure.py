@@ -70,7 +70,7 @@ if __name__ == "__main__":
     writer = SummaryWriter(exp_folder_path + "/log", flush_secs=30)
     os.makedirs(exp_folder_path + "/checkpoints")
 
-    dataset = data.get_copdgene_dataset(data_folder="", cache_folder="/author-raid2/author/data/icon", downscale=2)
+    dataset = data.get_copdgene_dataset(data_folder="", cache_folder="/name-raid2/name/data/icon", downscale=2)
     batch_function = lambda : make_batch_paired(dataset.tensors[0], GPUS*BATCH_SIZE)
 
     example = batch_function()

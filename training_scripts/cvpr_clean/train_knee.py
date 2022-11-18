@@ -24,7 +24,7 @@ def make_batch(dataset):
 if __name__ == "__main__":
     footsteps.initialize()
 
-    dataset = torch.load("/author-ssd/author/knees_big_2xdownsample_train_set")
+    dataset = torch.load("/name-ssd/name/knees_big_2xdownsample_train_set")
 
     batch_function = lambda : (make_batch(dataset), make_batch(dataset))
 

@@ -3,7 +3,7 @@ train_brain.py
 System:
 biag-gpu6.cs.unc.edu
 Python:
-/author-raid1/author/anaconda3/envs/ICON_newdir/bin/python
+/name-raid1/name/anaconda3/envs/ICON_newdir/bin/python
 Git Hash:
 1.0.0-30-g1a6a727
 https://github.com/uncbiag/ICON/tree/1.0.0-30-g1a6a727
@@ -30,8 +30,8 @@ index dc2e5d5..8387464 100644
  input_shape = [1, 1, 80, 192, 192]
  net = cvpr_network.make_network(input_shape, include_last_step=True, lmbda=.2, loss_fn=icon.ssd_only_interpolated)
  
--weights_path = "/author-raid1/author/ICON/training_scripts/gradICON/results/ent2end_thenonemore-7/network_weights_49800"
-+weights_path = "/author-raid1/author/ICON/training_scripts/gradICON/results/ent2end_thenonemore-7/network_weights_10200"
+-weights_path = "/name-raid1/name/ICON/training_scripts/gradICON/results/ent2end_thenonemore-7/network_weights_49800"
++weights_path = "/name-raid1/name/ICON/training_scripts/gradICON/results/ent2end_thenonemore-7/network_weights_10200"
  
  utils.log(net.regis_net.load_state_dict(torch.load(weights_path), strict=False))
  net.eval()
@@ -51,4 +51,4 @@ index 04f6f30..c3a8934 100644
  def make_batch(dataset):
      image = torch.cat([random.choice(dataset) for _ in range(GPUS * BATCH_SIZE)])
 Current working dir:
-/author-raid1/author/ICON/training_scripts/cvpr_clean
+/name-raid1/name/ICON/training_scripts/cvpr_clean

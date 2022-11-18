@@ -245,7 +245,7 @@ if __name__ == "__main__":
     footsteps.initialize()
 
 
-    dataset = torch.load("/author/author/knees_big_2xdownsample_train_set")
+    dataset = torch.load("/name/name/knees_big_2xdownsample_train_set")
     hires_net = make_network()
 
     if GPUS == 1:

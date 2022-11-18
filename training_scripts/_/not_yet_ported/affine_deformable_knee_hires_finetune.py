@@ -53,7 +53,7 @@ for p in net.affine_regis_net.parameters():
     p.requires_grad = False
 
 # _, knees = data.get_knees_dataset()
-knees = torch.load("/author/author/knees_big_train_set")
+knees = torch.load("/name/name/knees_big_train_set")
 if GPUS == 1:
     net_par = net.cuda()
 else:

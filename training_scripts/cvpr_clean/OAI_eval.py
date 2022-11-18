@@ -65,7 +65,7 @@ dices = []
 flips = []
 
 for test_pair_path in test_pair_paths:
-    test_pair_path = test_pair_path.replace("author", "author-raid").split()
+    test_pair_path = test_pair_path.replace("name", "name-raid").split()
     test_pair = [itk.imread(path) for path in test_pair_path]
     test_pair = [
         (

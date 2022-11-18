@@ -105,12 +105,12 @@ def preprocess(image):
 dices = []
 
 
-paths = glob.glob("/author-raid1/author/Subcortical_Atlas_Fusion2/*WarpedLabels*")
+paths = glob.glob("/name-raid1/name/Subcortical_Atlas_Fusion2/*WarpedLabels*")
 atlas_registered = [p.split("/malf3")[-1].split("_")[0] for p in paths]
 
 
 def get_sub_seg(n):
-    path = f"/author-raid1/author/Subcortical_Atlas_Fusion2/{n}_label.nii.gz"
+    path = f"/name-raid1/name/Subcortical_Atlas_Fusion2/{n}_label.nii.gz"
     return itk.imread(path)
 
 
@@ -125,7 +125,7 @@ for _ in range(20):
     image_A, image_B = (
         preprocess(
             itk.imread(
-                f"/author-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz"
+                f"/name-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz"
             )
         )
         for n in (n_A, n_B)
@@ -151,8 +151,8 @@ for _ in range(20):
     #subprocess.run("vshow B.nii.gz -z", shell=True)
     #sys.exit()
 
-    cmd = """python /author-raid1/author/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A.nii.gz --moving B.nii.gz --moved out.nii.gz --model /author-raid1/author/voxelmorph/brains-dice-vel-0.5-res-16-256f.h5 --warp warp.nii.gz"""
-    # cmd = """python /author-raid1/author/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A.nii.gz --moving B.nii.gz --moved out.nii.gz --model shapes-dice-vel-3-res-8-16-32-256f.h5 --warp warp.nii.gz"""
+    cmd = """python /name-raid1/name/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A.nii.gz --moving B.nii.gz --moved out.nii.gz --model /name-raid1/name/voxelmorph/brains-dice-vel-0.5-res-16-256f.h5 --warp warp.nii.gz"""
+    # cmd = """python /name-raid1/name/voxelmorph/voxelmorph/scripts/tf/register.py --fixed A.nii.gz --moving B.nii.gz --moved out.nii.gz --model shapes-dice-vel-3-res-8-16-32-256f.h5 --warp warp.nii.gz"""
     subprocess.run(cmd, shell=True)
 
     import voxelmorph

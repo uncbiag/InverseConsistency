@@ -50,7 +50,7 @@ fullres_net.assign_identity_map(input_shape)
 
 # for p in hires_net.regis_net.netPhi.parameters():
 #    p.requires_grad = False
-knees = torch.load("/author-ssd/author/knees_fullsize")
+knees = torch.load("/name-ssd/name/knees_fullsize")
 
 if GPUS == 1:
     net_par = fullres_net.cuda()

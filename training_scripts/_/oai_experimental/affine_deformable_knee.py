@@ -28,7 +28,7 @@ net = inverseConsistentNet.InverseConsistentNet(
 
 net.assign_identity_map(input_shape)
 
-knees = torch.load("/author/author/knees_big_train_set")
+knees = torch.load("/name/name/knees_big_train_set")
 if GPUS == 1:
     net_par = net.cuda()
 else:

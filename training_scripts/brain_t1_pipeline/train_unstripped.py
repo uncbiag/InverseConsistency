@@ -40,10 +40,10 @@ def make_batch():
 if __name__ == "__main__":
     footsteps.initialize()
     brains = torch.load(
-        "/author-ssd/author/ICON_brain_preprocessed_data/unstripped_halfres-2/brain_train_2xdown_scaled"
+        "/name-ssd/name/ICON_brain_preprocessed_data/unstripped_halfres-2/brain_train_2xdown_scaled"
     )
     hires_net = make_network()
-    weights_path = "/author-raid1/author/InverseConsistency/training_scripts/brain_t1_pipeline/results/lncc.7/knee_aligner_resi_net99900"
+    weights_path = "/name-raid1/name/InverseConsistency/training_scripts/brain_t1_pipeline/results/lncc.7/knee_aligner_resi_net99900"
     hires_net.regis_net.load_state_dict(torch.load(weights_path), strict=False)
 
 

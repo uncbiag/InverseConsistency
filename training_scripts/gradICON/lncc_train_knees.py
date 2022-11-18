@@ -34,7 +34,7 @@ def make_network():
 
 hires_net = make_network()
 
-knees = torch.load("/author-ssd/author/knees_big_2xdownsample_train_set")
+knees = torch.load("/name-ssd/name/knees_big_2xdownsample_train_set")
 
 if GPUS == 1:
     net_par = hires_net.cuda()
