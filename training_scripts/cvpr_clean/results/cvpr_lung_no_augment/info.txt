@@ -1,0 +1,122 @@
+Command:
+train_lung.py
+System:
+biag-gpu6.cs.unc.edu
+Python:
+/playpen-raid1/tgreer/anaconda3/envs/ICON_newdir/bin/python
+Git Hash:
+1.0.0-45-gf064861
+https://github.com/uncbiag/ICON/tree/1.0.0-45-gf064861
+Uncommitted changes:
+diff --git a/src/icon_registration/itk_wrapper.py b/src/icon_registration/itk_wrapper.py
+index c73ea83..164fb37 100644
+--- a/src/icon_registration/itk_wrapper.py
++++ b/src/icon_registration/itk_wrapper.py
+@@ -12,6 +12,7 @@ def finetune_execute(model, image_A, image_B, steps):
+     for _ in range(steps):
+         optimizer.zero_grad()
+         loss_tuple = model(image_A, image_B)
++        print(loss_tuple)
+         loss_tuple[0].backward()
+         optimizer.step()
+     with torch.no_grad():
+@@ -48,7 +49,7 @@ def register_pair(
+     )
+     if finetune_steps == None:
+         with torch.no_grad():
+-            model(A_resized, B_resized)
++            print(model(A_resized, B_resized))
+     else:
+         finetune_execute(model, A_resized, B_resized, finetune_steps)
+ 
+diff --git a/training_scripts/cvpr_clean/COPDGene_eval.py b/training_scripts/cvpr_clean/COPDGene_eval.py
+index f848c5f..972bf8c 100644
+--- a/training_scripts/cvpr_clean/COPDGene_eval.py
++++ b/training_scripts/cvpr_clean/COPDGene_eval.py
+@@ -26,7 +26,7 @@ args = parser.parse_args()
+ weights_path = args.weights_path
+ 
+ input_shape = [1, 1, 175, 175, 175]
+-net = cvpr_network.make_network(input_shape, include_last_step=False)
++net = cvpr_network.make_network(input_shape, include_last_step=True)
+ 
+ 
+ utils.log(net.regis_net.load_state_dict(torch.load(weights_path), strict=False))
+diff --git a/training_scripts/cvpr_clean/HCP_eval.py b/training_scripts/cvpr_clean/HCP_eval.py
+index 9c93e5a..b2a1994 100644
+--- a/training_scripts/cvpr_clean/HCP_eval.py
++++ b/training_scripts/cvpr_clean/HCP_eval.py
+@@ -48,7 +48,7 @@ for _ in range(20):
+     image_A, image_B = (preprocess(itk.imread(f"/playpen-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz")) for n in (n_A, n_B))
+ 
+     #import pdb; pdb.set_trace()
+-    phi_AB, phi_BA = itk_wrapper.register_pair(net, image_A, image_B, finetune_steps=None)
++    phi_AB, phi_BA = itk_wrapper.register_pair(net, image_A, image_B, finetune_steps=50)
+ 
+     segmentation_A, segmentation_B = (get_sub_seg(n) for n in (n_A, n_B))
+ 
+diff --git a/training_scripts/cvpr_clean/OAI_eval.py b/training_scripts/cvpr_clean/OAI_eval.py
+index dc2e5d5..19aeb78 100644
+--- a/training_scripts/cvpr_clean/OAI_eval.py
++++ b/training_scripts/cvpr_clean/OAI_eval.py
+@@ -9,8 +9,33 @@ import icon_registration.itk_wrapper as itk_wrapper
+ import utils
+ 
+ 
++def itk_half_scale_image(img):
++    scale = .5
++    input_size = itk.size(img)
++    input_spacing = itk.spacing(img)
++    input_origin = itk.origin(img)
++    dimension = img.GetImageDimension()
+ 
++    output_size = [int(input_size[d] * scale) for d in range(dimension)]
++    output_spacing = [input_spacing[d] / scale for d in range(dimension)]
++    output_origin = [input_origin[d] + .5 * (output_spacing[d] - input_spacing[d]) for d in range(dimension)]
+ 
++    interpolator = itk.NearestNeighborInterpolateImageFunction.New(img)
++
++    resampled = itk.resample_image_filter(
++            img,
++            transform=itk.IdentityTransform[itk.D, 3].New(),
++            interpolator=interpolator,
++            size=output_size,
++            output_spacing=output_spacing,
++            output_origin=output_origin,
++            output_direction=img.GetDirection()
++    )
++    #print(img)
++    #print(resampled)
++    #exit()
++
++    return resampled
+ input_shape = [1, 1, 80, 192, 192]
+ net = cvpr_network.make_network(input_shape, include_last_step=True, lmbda=.2, loss_fn=icon.ssd_only_interpolated)
+ 
+@@ -33,7 +58,10 @@ for test_pair_path in test_pair_paths:
+                 ) for (t , path) in zip(test_pair, test_pair_path)]
+     image_A, image_B, segmentation_A, segmentation_B = test_pair
+ 
+-    phi_AB, phi_BA = itk_wrapper.register_pair(net, image_A, image_B, finetune_steps=None)
++    segmentation_A = itk_half_scale_image(segmentation_A)
++    segmentation_B = itk_half_scale_image(segmentation_B)
++
++    phi_AB, phi_BA = itk_wrapper.register_pair(net, image_A, image_B, finetune_steps=50)
+ 
+     interpolator = itk.NearestNeighborInterpolateImageFunction.New(segmentation_A)
+ 
+diff --git a/training_scripts/cvpr_clean/train_lung.py b/training_scripts/cvpr_clean/train_lung.py
+index cc0f5ea..9e3022e 100644
+--- a/training_scripts/cvpr_clean/train_lung.py
++++ b/training_scripts/cvpr_clean/train_lung.py
+@@ -16,7 +16,7 @@ BATCH_SIZE=4
+ GPUS = 4
+ ITERATIONS_PER_STEP = 50000
+ #ITERATIONS_PER_STEP = 30
+-WITH_AUGMENT = True
++WITH_AUGMENT = False
+ 
+ class lung_dataloader():
+     def __init__(self, data_path, scale, batch_size, with_augment=False) -> None:
+Current working dir:
+/playpen-raid1/tgreer/ICON/training_scripts/cvpr_clean

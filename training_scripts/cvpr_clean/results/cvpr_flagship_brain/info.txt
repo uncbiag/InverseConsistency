@@ -1,0 +1,54 @@
+Command:
+train_brain.py
+System:
+biag-gpu6.cs.unc.edu
+Python:
+/playpen-raid1/tgreer/anaconda3/envs/ICON_newdir/bin/python
+Git Hash:
+1.0.0-30-g1a6a727
+https://github.com/uncbiag/ICON/tree/1.0.0-30-g1a6a727
+Uncommitted changes:
+diff --git a/training_scripts/cvpr_clean/COPDGene_eval.py b/training_scripts/cvpr_clean/COPDGene_eval.py
+index e69de29..9cc3602 100644
+--- a/training_scripts/cvpr_clean/COPDGene_eval.py
++++ b/training_scripts/cvpr_clean/COPDGene_eval.py
+@@ -0,0 +1,9 @@
++import itk
++import numpy as np
++import unittest
++import matplotlib.pyplot as plt
++import numpy as np
++
++import icon_registration.pretrained_models
++import icon_registration.itk_wrapper
++import icon_registration.test_utils
+diff --git a/training_scripts/cvpr_clean/OAI_eval.py b/training_scripts/cvpr_clean/OAI_eval.py
+index dc2e5d5..8387464 100644
+--- a/training_scripts/cvpr_clean/OAI_eval.py
++++ b/training_scripts/cvpr_clean/OAI_eval.py
+@@ -14,7 +14,7 @@ import utils
+ input_shape = [1, 1, 80, 192, 192]
+ net = cvpr_network.make_network(input_shape, include_last_step=True, lmbda=.2, loss_fn=icon.ssd_only_interpolated)
+ 
+-weights_path = "/playpen-raid1/tgreer/ICON/training_scripts/gradICON/results/ent2end_thenonemore-7/network_weights_49800"
++weights_path = "/playpen-raid1/tgreer/ICON/training_scripts/gradICON/results/ent2end_thenonemore-7/network_weights_10200"
+ 
+ utils.log(net.regis_net.load_state_dict(torch.load(weights_path), strict=False))
+ net.eval()
+diff --git a/training_scripts/cvpr_clean/train_brain.py b/training_scripts/cvpr_clean/train_brain.py
+index 04f6f30..c3a8934 100644
+--- a/training_scripts/cvpr_clean/train_brain.py
++++ b/training_scripts/cvpr_clean/train_brain.py
+@@ -11,8 +11,8 @@ input_shape = [1, 1, 130, 155, 130]
+ 
+ BATCH_SIZE=8
+ GPUS = 4
+-#ITERATIONS_PER_STEP = 50000
+-ITERATIONS_PER_STEP = 60
++ITERATIONS_PER_STEP = 50000
++#ITERATIONS_PER_STEP = 60
+ 
+ def make_batch(dataset):
+     image = torch.cat([random.choice(dataset) for _ in range(GPUS * BATCH_SIZE)])
+Current working dir:
+/playpen-raid1/tgreer/ICON/training_scripts/cvpr_clean

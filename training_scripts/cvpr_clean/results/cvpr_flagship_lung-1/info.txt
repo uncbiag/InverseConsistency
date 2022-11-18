@@ -1,0 +1,69 @@
+Command:
+train_lung.py
+System:
+biag-gpu6.cs.unc.edu
+Python:
+/playpen-raid1/tgreer/anaconda3/envs/ICON_newdir/bin/python
+Git Hash:
+1.0.0-42-g58315b2
+https://github.com/uncbiag/ICON/tree/1.0.0-42-g58315b2
+Uncommitted changes:
+diff --git a/src/icon_registration/itk_wrapper.py b/src/icon_registration/itk_wrapper.py
+index c73ea83..164fb37 100644
+--- a/src/icon_registration/itk_wrapper.py
++++ b/src/icon_registration/itk_wrapper.py
+@@ -12,6 +12,7 @@ def finetune_execute(model, image_A, image_B, steps):
+     for _ in range(steps):
+         optimizer.zero_grad()
+         loss_tuple = model(image_A, image_B)
++        print(loss_tuple)
+         loss_tuple[0].backward()
+         optimizer.step()
+     with torch.no_grad():
+@@ -48,7 +49,7 @@ def register_pair(
+     )
+     if finetune_steps == None:
+         with torch.no_grad():
+-            model(A_resized, B_resized)
++            print(model(A_resized, B_resized))
+     else:
+         finetune_execute(model, A_resized, B_resized, finetune_steps)
+ 
+diff --git a/training_scripts/cvpr_clean/COPDGene_eval.py b/training_scripts/cvpr_clean/COPDGene_eval.py
+index ea41628..a351332 100644
+--- a/training_scripts/cvpr_clean/COPDGene_eval.py
++++ b/training_scripts/cvpr_clean/COPDGene_eval.py
+@@ -55,7 +55,7 @@ for case in cases:
+             np.array(phi_AB.TransformPoint(tuple(landmarks_exp[i]))),
+         )
+     dists.append(np.sqrt(np.sum((px - py) ** 2)))
+-    print(f"Mean error on {case}: ", np.mean(dists))
++    utils.log(f"Mean error on {case}: ", np.mean(dists))
+     dists = []
+     for i in range(len(landmarks_insp)):
+         px, py = (
+@@ -63,6 +63,6 @@ for case in cases:
+             np.array(phi_BA.TransformPoint(tuple(landmarks_insp[i]))),
+         )
+     dists.append(np.sqrt(np.sum((px - py) ** 2)))
+-    print(f"Mean error on {case}: ", np.mean(dists))
++    utils.log(f"Mean error on {case}: ", np.mean(dists))
+ 
+     
+diff --git a/training_scripts/cvpr_clean/train_brain.py b/training_scripts/cvpr_clean/train_brain.py
+index 04f6f30..c3a8934 100644
+--- a/training_scripts/cvpr_clean/train_brain.py
++++ b/training_scripts/cvpr_clean/train_brain.py
+@@ -11,8 +11,8 @@ input_shape = [1, 1, 130, 155, 130]
+ 
+ BATCH_SIZE=8
+ GPUS = 4
+-#ITERATIONS_PER_STEP = 50000
+-ITERATIONS_PER_STEP = 60
++ITERATIONS_PER_STEP = 50000
++#ITERATIONS_PER_STEP = 60
+ 
+ def make_batch(dataset):
+     image = torch.cat([random.choice(dataset) for _ in range(GPUS * BATCH_SIZE)])
+Current working dir:
+/playpen-raid1/tgreer/ICON/training_scripts/cvpr_clean
