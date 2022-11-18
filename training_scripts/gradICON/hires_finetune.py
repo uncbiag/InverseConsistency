@@ -51,7 +51,7 @@ hires_net.assign_identity_map(input_shape)
 
 # for p in hires_net.regis_net.netPhi.parameters():
 #    p.requires_grad = False
-knees = torch.load("/playpen-ssd/tgreer/knees_big_2xdownsample_train_set")
+knees = torch.load("/author-ssd/author/knees_big_2xdownsample_train_set")
 
 if GPUS == 1:
     net_par = hires_net.cuda()

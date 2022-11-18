@@ -127,11 +127,11 @@ dices = []
 flips = []
 
 for test_pair_path in test_pair_paths:
-    test_pair_path = test_pair_path.replace("playpen", "playpen-raid").split()
-    # test_pair_path[0] = test_pair_path[0].replace("/playpen-raid/zhenlinx/Data/OAI_segmentation/Nifti_rescaled/", "/playpen-raid2/raul/DATASETS/OAI/192x192x80/")
-    # test_pair_path[1] = test_pair_path[1].replace("/playpen-raid/zhenlinx/Data/OAI_segmentation/Nifti_rescaled/", "/playpen-raid2/raul/DATASETS/OAI/192x192x80/")
-    # test_pair_path[2] = test_pair_path[2].replace("/playpen-raid/zhenlinx/Data/OAI_segmentation/Nifti_rescaled/", "/playpen-raid2/raul/DATASETS/OAI/192x192x80/")
-    # test_pair_path[3] = test_pair_path[3].replace("/playpen-raid/zhenlinx/Data/OAI_segmentation/Nifti_rescaled/", "/playpen-raid2/raul/DATASETS/OAI/192x192x80/")
+    test_pair_path = test_pair_path.replace("author", "author-raid").split()
+    # test_pair_path[0] = test_pair_path[0].replace("/author-raid/author/Data/OAI_segmentation/Nifti_rescaled/", "/author-raid2/raul/DATASETS/OAI/192x192x80/")
+    # test_pair_path[1] = test_pair_path[1].replace("/author-raid/author/Data/OAI_segmentation/Nifti_rescaled/", "/author-raid2/raul/DATASETS/OAI/192x192x80/")
+    # test_pair_path[2] = test_pair_path[2].replace("/author-raid/author/Data/OAI_segmentation/Nifti_rescaled/", "/author-raid2/raul/DATASETS/OAI/192x192x80/")
+    # test_pair_path[3] = test_pair_path[3].replace("/author-raid/author/Data/OAI_segmentation/Nifti_rescaled/", "/author-raid2/raul/DATASETS/OAI/192x192x80/")
     test_pair = [itk.imread(path) for path in test_pair_path]
     test_pair = [
         (
@@ -147,14 +147,14 @@ for test_pair_path in test_pair_paths:
     segmentation_B = itk_half_scale_image(segmentation_B)
 
     # create new data
-    if not os.path.exists("/playpen-raid2/raul/DATASETS/OAI/192x192x80_FLIP_RIGHT"):
-        os.makedirs("/playpen-raid2/raul/DATASETS/OAI/192x192x80_FLIP_RIGHT")
+    if not os.path.exists("/author-raid2/raul/DATASETS/OAI/192x192x80_FLIP_RIGHT"):
+        os.makedirs("/author-raid2/raul/DATASETS/OAI/192x192x80_FLIP_RIGHT")
 
     img_tensor_A = torch.tensor(itk.GetArrayFromImage(image_A))[None, None, ...]
     img_tensor_A = torch.nn.functional.interpolate(img_tensor_A, (80, 192, 192), mode="trilinear", align_corners=False)
     img_tensor_B = torch.tensor(itk.GetArrayFromImage(image_B))[None, None, ...]
     img_tensor_B = torch.nn.functional.interpolate(img_tensor_B, (80, 192, 192), mode="trilinear", align_corners=False)
-    # itk.imwrite(itk.GetImageFromArray(img_tensor_A.squeeze()), "/playpen-raid2/raul/DATASETS/OAI/192x192x80_FLIP_RIGHT/{}".format(os.path.basename(test_pair_path[0])))
+    # itk.imwrite(itk.GetImageFromArray(img_tensor_A.squeeze()), "/author-raid2/raul/DATASETS/OAI/192x192x80_FLIP_RIGHT/{}".format(os.path.basename(test_pair_path[0])))
 
     # import pdb; pdb.set_trace()
 

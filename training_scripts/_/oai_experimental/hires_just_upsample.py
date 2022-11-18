@@ -48,7 +48,7 @@ SCALE = 2  # 1 IS QUARTER RES, 2 IS HALF RES, 4 IS FULL RES
 input_shape = [BATCH_SIZE, 1, 40 * SCALE, 96 * SCALE, 96 * SCALE]
 hires_net.assign_identity_map(input_shape)
 
-knees = torch.load("/playpen/tgreer/knees_big_2xdownsample_train_set")
+knees = torch.load("/author/author/knees_big_2xdownsample_train_set")
 
 if GPUS == 1:
     net_par = hires_net.cuda()

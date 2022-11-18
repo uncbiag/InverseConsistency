@@ -1,7 +1,7 @@
 import os
 import argparse
 import footsteps
-footsteps.initialize(output_root="/playpen-ssd/tgreer/ICON_brain_preprocessed_data/")
+footsteps.initialize(output_root="/author-ssd/author/ICON_brain_preprocessed_data/")
 
 
 def process(iA, isSeg=False):
@@ -22,9 +22,9 @@ for split in ["train"]:
 
     ds = []
 
-    # /playpen-raid2/Data/HCP/HCP_1200/100206/T1w/T1w_acpc_dc.nii.gz
+    # /author-raid2/Data/HCP/HCP_1200/100206/T1w/T1w_acpc_dc.nii.gz
     # ==>
-    # /playpen-raid2/Data/HCP/HCP_1200/100206/T1w/T1w_acpc_dc_restore_brain.nii.gz
+    # /author-raid2/Data/HCP/HCP_1200/100206/T1w/T1w_acpc_dc_restore_brain.nii.gz
     for name in tqdm.tqdm(list(iter(image_paths))[:]):
         name = name.split(".nii.gz")[0] + "_restore_brain.nii.gz"
 

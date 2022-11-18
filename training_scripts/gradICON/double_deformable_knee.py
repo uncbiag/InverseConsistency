@@ -32,7 +32,7 @@ net = inverseConsistentNet.GradientICON(
 net.assign_identity_map(input_shape)
 
 
-knees = torch.load("/playpen-ssd/tgreer/knees_14k_small")
+knees = torch.load("/author-ssd/author/knees_14k_small")
 
 if GPUS == 1:
     net_par = net.cuda()

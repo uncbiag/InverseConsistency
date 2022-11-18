@@ -1,9 +1,9 @@
 import os
 
 
-with open("/playpen/tgreer/splits/cross/full_resolution/test/pair_name_list.txt") as f:
+with open("/author/author/splits/cross/full_resolution/test/pair_name_list.txt") as f:
     test_pair_names = f.readlines()
-with open("/playpen/tgreer/splits/cross/full_resolution/test/pair_path_list.txt") as f:
+with open("/author/author/splits/cross/full_resolution/test/pair_path_list.txt") as f:
     test_pair_paths = f.readlines()
 
 
@@ -19,7 +19,7 @@ import numpy as np
 
 ds = []
 for tt in tqdm.tqdm(test_pair_paths):
-    tt = tt.replace("playpen", "playpen-raid")
+    tt = tt.replace("author", "author-raid")
     tt = tt.split()
     data = []
     for t in tt:
@@ -46,4 +46,4 @@ for tt in tqdm.tqdm(test_pair_paths):
 
     ds.append([iA, iB, cA, cB])
 
-torch.save(ds, "/playpen/tgreer/knees_test_set_hires")
+torch.save(ds, "/author/author/knees_test_set_hires")

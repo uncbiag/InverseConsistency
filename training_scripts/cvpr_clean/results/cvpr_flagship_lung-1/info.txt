@@ -3,7 +3,7 @@ train_lung.py
 System:
 biag-gpu6.cs.unc.edu
 Python:
-/playpen-raid1/tgreer/anaconda3/envs/ICON_newdir/bin/python
+/author-raid1/author/anaconda3/envs/ICON_newdir/bin/python
 Git Hash:
 1.0.0-42-g58315b2
 https://github.com/uncbiag/ICON/tree/1.0.0-42-g58315b2
@@ -66,4 +66,4 @@ index 04f6f30..c3a8934 100644
  def make_batch(dataset):
      image = torch.cat([random.choice(dataset) for _ in range(GPUS * BATCH_SIZE)])
 Current working dir:
-/playpen-raid1/tgreer/ICON/training_scripts/cvpr_clean
+/author-raid1/author/ICON/training_scripts/cvpr_clean

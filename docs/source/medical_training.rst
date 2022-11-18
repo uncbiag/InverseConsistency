@@ -21,7 +21,7 @@ Preprocessing the Dataset
         import itk
         import tqdm
         import numpy as np
-        footsteps.initialize(output_root="/playpen-ssd/tgreer/ICON_brain_preprocessed_data/")
+        footsteps.initialize(output_root="/author-ssd/author/ICON_brain_preprocessed_data/")
 
         def process(iA, isSeg=False):
             iA = iA[None, None, :, :, :]
@@ -97,7 +97,7 @@ Then, use the function :func:`icon_registration.train.train_batchfunction` to co
         if __name__ == "__main__":
             footsteps.initialize()
             brains = torch.load(
-                "/playpen-ssd/tgreer/ICON_brain_preprocessed_data/stripped/brain_train_2xdown_scaled"
+                "/author-ssd/author/ICON_brain_preprocessed_data/stripped/brain_train_2xdown_scaled"
             )
             hires_net = make_network()
 

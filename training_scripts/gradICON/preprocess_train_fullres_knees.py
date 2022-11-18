@@ -22,7 +22,7 @@ import numpy as np
 
 ds = []
 for tt in tqdm.tqdm(list(iter(train_paths))[:]):
-    tt = tt.replace("playpen", "playpen-raid")
+    tt = tt.replace("author", "author-raid")
     image = torch.tensor(np.asarray(itk.imread(tt)) * 256).type(torch.uint8)
     if "RIGHT" in tt:
         image = torch.flip(image, [0])
@@ -37,4 +37,4 @@ for tt in tqdm.tqdm(list(iter(train_paths))[:]):
 
     ds.append(iA)
 
-torch.save(ds, "/playpen-ssd/tgreer/knees_fullsize")
+torch.save(ds, "/author-ssd/author/knees_fullsize")

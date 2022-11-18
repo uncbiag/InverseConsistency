@@ -47,7 +47,7 @@ optimizer.load_state_dict(optimizer_state)
 net_par.train()
 
 
-knees = torch.load("/playpen/tgreer/knees_big_2xdownsample_train_set")
+knees = torch.load("/author/author/knees_big_2xdownsample_train_set")
 
 
 def make_batch():

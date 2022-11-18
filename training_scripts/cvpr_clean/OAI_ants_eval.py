@@ -16,7 +16,7 @@ def mean_dice_f(sA, sB):
     return utils.itk_mean_dice(sA, sB)
 
 for test_pair_path in test_pair_paths:
-    test_pair_path = test_pair_path.replace("playpen", "playpen-raid").split()
+    test_pair_path = test_pair_path.replace("author", "author-raid").split()
     test_pair = [itk.imread(path) for path in test_pair_path]
     test_pair = [
             (itk.flip_image_filter(t, flip_axes=(False, False, True))

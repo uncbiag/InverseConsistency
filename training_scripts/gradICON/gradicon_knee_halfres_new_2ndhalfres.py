@@ -161,7 +161,7 @@ if __name__ == "__main__":
     footsteps.initialize()
 
 
-    dataset = torch.load("/playpen/tgreer/knees_big_2xdownsample_train_set")
+    dataset = torch.load("/author/author/knees_big_2xdownsample_train_set")
     hires_net = make_network()
 
     pretrained_weights = torch.load("results/end2endlmbda.2/network_weights_50100")

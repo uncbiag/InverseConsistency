@@ -91,7 +91,7 @@ if __name__ == "__main__":
     footsteps.initialize()
 
     dataloader = lung_dataloader(
-        "/playpen-ssd/tgreer/ICON_lung/results/half_res_preprocessed_transposed_SI",
+        "/author-ssd/author/ICON_lung/results/half_res_preprocessed_transposed_SI",
         scale="2xdown",
         batch_size = GPUS * BATCH_SIZE,
         with_augment=WITH_AUGMENT

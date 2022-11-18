@@ -16,11 +16,11 @@ def preprocess(image):
 dices = []
 
 import glob
-paths = glob.glob("/playpen-raid1/tgreer/Subcortical_Atlas_Fusion2/*WarpedLabels*")
+paths = glob.glob("/author-raid1/author/Subcortical_Atlas_Fusion2/*WarpedLabels*")
 atlas_registered = [p.split("/malf3")[-1].split("_")[0] for p in paths]
 
 def get_sub_seg(n):
-    path = f"/playpen-raid1/tgreer/Subcortical_Atlas_Fusion2/{n}_label.nii.gz"
+    path = f"/author-raid1/author/Subcortical_Atlas_Fusion2/{n}_label.nii.gz"
     return itk.imread(path)
 
 def mean_dice_f(sA, sB):
@@ -30,7 +30,7 @@ def mean_dice_f(sA, sB):
 random.seed(1)
 for _ in range(20):
     n_A, n_B = (random.choice(atlas_registered) for _ in range(2))
-    image_A, image_B = (preprocess(itk.imread(f"/playpen-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz")) for n in (n_A, n_B))
+    image_A, image_B = (preprocess(itk.imread(f"/author-raid2/Data/HCP/HCP_1200/{n}/T1w/T1w_acpc_dc_restore_brain.nii.gz")) for n in (n_A, n_B))
 
     segmentation_A, segmentation_B = (get_sub_seg(n) for n in (n_A, n_B))
     segmentation_A, segmentation_B = [
