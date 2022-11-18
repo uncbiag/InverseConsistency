@@ -5,7 +5,8 @@ import torch.nn.functional as F
 
 # This unet architecture is borrowed from VoxelMorph repo: https://github.com/voxelmorph/voxelmorph
 # It is used as baseline of the ablation study regarding the network structures.
-# We adopted the interface to be the same as the unet in ICON repo.
+# We adopted the interface to be the same as the unet in ICON repo 
+# and modified the code to support odd image shape.
 
 class ConvBlock(nn.Module):
     """
