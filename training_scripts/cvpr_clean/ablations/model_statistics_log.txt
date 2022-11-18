@@ -1,0 +1,90 @@
+##################################### vm_unet ######################################
+GPU memory usage at initial: 0.0 MB
+GPU memory usage after loading model: 1.25390625 MB
+GPU memory usage after loading data: 42.1435546875 MB
+Peak memory usage after one forward pass: 4182.0 MB
+Elapsed time: 163.04803466796875 millisec.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.Conv3d'>.
+[INFO] Register count_relu() for <class 'torch.nn.modules.activation.LeakyReLU'>.
+FLOPs: 397.878G G, #Params: 327.331K
+Parameter count: 327331
+##################################### icon_unet ######################################
+GPU memory usage at initial: 0.0 MB
+GPU memory usage after loading model: 67.419921875 MB
+GPU memory usage after loading data: 108.3095703125 MB
+Peak memory usage after one forward pass: 2244.0 MB
+Elapsed time: 68.06507568359375 millisec.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.Conv3d'>.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.ConvTranspose3d'>.
+[INFO] Register count_normalization() for <class 'torch.nn.modules.batchnorm.BatchNorm3d'>.
+FLOPs: 540.084G G, #Params: 17.670M
+Parameter count: 17670229
+##################################### vm ######################################
+GPU memory usage at initial: 0.0 MB
+GPU memory usage after loading model: 125.25390625 MB
+GPU memory usage after loading data: 166.1435546875 MB
+Peak memory usage after one forward pass: 4548.0 MB
+Elapsed time: 190.10478515625 millisec.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.Conv3d'>.
+[INFO] Register count_relu() for <class 'torch.nn.modules.activation.LeakyReLU'>.
+FLOPs: 397.878G G, #Params: 327.331K
+Parameter count: 327331
+##################################### lapirn_disp ######################################
+GPU memory usage at initial: 0.0 MB
+GPU memory usage after loading model: 74.70068359375 MB
+GPU memory usage after loading data: 116.29443359375 MB
+Peak memory usage after one forward pass: 5576.0 MB
+Elapsed time: 235.2964599609375 millisec.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.Conv3d'>.
+[INFO] Register count_relu() for <class 'torch.nn.modules.activation.LeakyReLU'>.
+[INFO] Register zero_ops() for <class 'torch.nn.modules.container.Sequential'>.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.ConvTranspose3d'>.
+[INFO] Register count_avgpool() for <class 'torch.nn.modules.pooling.AvgPool3d'>.
+FLOPs: 652.310G G, #Params: 923.748K
+Parameter count: 923748
+##################################### lapirn_diff ######################################
+GPU memory usage at initial: 0.0 MB
+GPU memory usage after loading model: 74.70068359375 MB
+GPU memory usage after loading data: 116.29443359375 MB
+Peak memory usage after one forward pass: 5578.0 MB
+Elapsed time: 253.8684326171875 millisec.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.Conv3d'>.
+[INFO] Register count_relu() for <class 'torch.nn.modules.activation.LeakyReLU'>.
+[INFO] Register zero_ops() for <class 'torch.nn.modules.container.Sequential'>.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.ConvTranspose3d'>.
+[INFO] Register count_avgpool() for <class 'torch.nn.modules.pooling.AvgPool3d'>.
+FLOPs: 652.310G G, #Params: 923.748K
+Parameter count: 923748
+##################################### icon ######################################
+GPU memory usage at initial: 0.0 MB
+GPU memory usage after loading model: 474.78125 MB
+GPU memory usage after loading data: 515.6708984375 MB
+Peak memory usage after one forward pass: 2918.0 MB
+Elapsed time: 96.36075439453126 millisec.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.Conv3d'>.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.ConvTranspose3d'>.
+[INFO] Register count_normalization() for <class 'torch.nn.modules.batchnorm.BatchNorm3d'>.
+FLOPs: 678.513G G, #Params: 53.011M
+Parameter count: 53010687
+##################################### gradicon_stage1 ######################################
+GPU memory usage at initial: 0.0 MB
+GPU memory usage after loading model: 475.75634765625 MB
+GPU memory usage after loading data: 516.64599609375 MB
+Peak memory usage after one forward pass: 2934.0 MB
+Elapsed time: 88.2432861328125 millisec.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.Conv3d'>.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.ConvTranspose3d'>.
+[INFO] Register count_normalization() for <class 'torch.nn.modules.batchnorm.BatchNorm3d'>.
+FLOPs: 618.592G G, #Params: 53.011M
+Parameter count: 53010687
+##################################### gradicon ######################################
+GPU memory usage at initial: 0.0 MB
+GPU memory usage after loading model: 667.67626953125 MB
+GPU memory usage after loading data: 708.56591796875 MB
+Peak memory usage after one forward pass: 3122.0 MB
+Elapsed time: 160.5918701171875 millisec.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.Conv3d'>.
+[INFO] Register count_convNd() for <class 'torch.nn.modules.conv.ConvTranspose3d'>.
+[INFO] Register count_normalization() for <class 'torch.nn.modules.batchnorm.BatchNorm3d'>.
+FLOPs: 1.159T G, #Params: 70.681M
+Parameter count: 70680916
