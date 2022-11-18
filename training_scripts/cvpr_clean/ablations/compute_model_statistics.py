@@ -1,3 +1,4 @@
+### Before you run the script, see the prerequisite in line 34, 51 and 69 of VM and LapIRN.
 ### To run this experiment, go to the root folder and run
 ### bash training_scripts/cvpr_clean/ablations/compute_model_statistics.sh
 
@@ -27,8 +28,27 @@ def get_net(name, inshape):
         import os
         os.environ['VXM_BACKEND'] = 'pytorch'
         import voxelmorph as vxm
+        # This line loads the trained model from a checkpoint. 
         net = vxm.networks.VxmDense.load("/playpen-raid2/lin.tian/projects/icon_lung/ICON_lung_results/icon/comparing/vm_diff/2022_05_15_21_22_37/checkpoints/0100.pt", device=device)
+        
+        # # If you do not have access to the checkpoint, use the following code.
+        # # The following code will create a default VM model. The only difference from 
+        # # the default VM model and the trained VM from the checkpoint is that we modified the code to 
+        # # allow VM supporting odd image shape.
+        # # Because default model cannot support odd image shape, we use 176 instead 175 here
+        # inshape = (176, 176, 176)
+        # enc_nf = [16, 32, 32, 32]
+        # dec_nf = [32, 32, 32, 32, 32, 16, 16]
+        # net = vxm.networks.VxmDense(
+        #     inshape=inshape,
+        #     nb_unet_features=[enc_nf, dec_nf],
+        #     bidir=True,
+        #     int_steps=7,
+        #     int_downsize=1
+        # )
+        # inshape = (1,1,176,176,176)
     elif name == 'lapirn_disp':
+        # To assess LapIRN, you need to clone the LapIRN repo and add the path to the code to system path.
         sys.path.append('/playpen-raid1/lin.tian/projects/pyReg/sotas/LapIRN/Code')
         from miccai2020_model_stage import Miccai2020_LDR_laplacian_unit_disp_add_lvl1, \
             Miccai2020_LDR_laplacian_unit_disp_add_lvl2, Miccai2020_LDR_laplacian_unit_disp_add_lvl3
@@ -46,6 +66,7 @@ def get_net(name, inshape):
         net = Miccai2020_LDR_laplacian_unit_disp_add_lvl3(2, 3, 7, is_train=False, imgshape=imgshape,
                                                             range_flow=0.4, model_lvl2=model_lvl2).cuda()
     elif name == 'lapirn_diff':
+        # To assess LapIRN, you need to clone the LapIRN repo and add the path to the code to system path.
         sys.path.append('/playpen-raid1/lin.tian/projects/pyReg/sotas/LapIRN/Code')
         from miccai2020_model_stage import Miccai2020_LDR_laplacian_unit_add_lvl1, \
             Miccai2020_LDR_laplacian_unit_add_lvl2, Miccai2020_LDR_laplacian_unit_add_lvl3
