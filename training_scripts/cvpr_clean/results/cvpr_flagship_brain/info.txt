@@ -1,7 +1,7 @@
 Command:
 train_brain.py
 System:
-biag-gpu6.cs.unc.edu
+name-gpu6.cs.unc.edu
 Python:
 /name-raid1/name/anaconda3/envs/ICON_newdir/bin/python
 Git Hash:

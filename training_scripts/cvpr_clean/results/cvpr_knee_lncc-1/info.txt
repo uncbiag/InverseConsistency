@@ -1,7 +1,7 @@
 Command:
 train_knee.py
 System:
-biag-gpu5.cs.unc.edu
+name-gpu5.cs.unc.edu
 Python:
 /name-raid1/name/anaconda3/envs/ICON_newdir/bin/python
 Git Hash:

@@ -2,9 +2,9 @@ The scripts used to train the registration network for the OAI results in the pa
 
 Scripts in order:
 
-preprocess_test_knees.py (was run on biag-gpu0 where data lives)
+preprocess_test_knees.py (was run on name-gpu0 where data lives)
 
-preprocess_train_knees.py (was run on biag-gpu0 where data lives)
+preprocess_train_knees.py (was run on name-gpu0 where data lives)
 
 double_deformable_knee.py
 
