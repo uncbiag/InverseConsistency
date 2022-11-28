@@ -1,32 +1,65 @@
-import random
-import shutil
-
 import itk
-import numpy as np
 import torch
-import torch.nn.functional as F
 
 import icon_registration.config as config
 
 from .. import losses, network_wrappers, networks
-from ..mermaidlite import compute_warped_image_multiNC, identity_map_multiN
 
 
 def make_network():
+    dimension = 3
+    inner_net = network_wrappers.FunctionFromVectorField(networks.tallUNet2(dimension=dimension))
 
-    phi = network_wrappers.FunctionFromVectorField(networks.tallUNet2(dimension=3))
-    psi = network_wrappers.FunctionFromVectorField(networks.tallUNet2(dimension=3))
-    xi = network_wrappers.FunctionFromVectorField(networks.tallUNet2(dimension=3))
+    for _ in range(2):
+        inner_net = network_wrappers.TwoStepRegistration(
+            network_wrappers.DownsampleRegistration(inner_net, dimension=dimension),
+            network_wrappers.FunctionFromVectorField(networks.tallUNet2(dimension=dimension))
+        )
+    inner_net = network_wrappers.TwoStepRegistration(inner_net, network_wrappers.FunctionFromVectorField(networks.tallUNet2(dimension=dimension)))
 
-    net = losses.GradientICON(
-        network_wrappers.DoubleNet(
-            network_wrappers.DownsampleNet(network_wrappers.DoubleNet(phi, psi), 3),
-            xi,
-        ),
-        losses.LNCC(sigma=5),
-        1,
-    )
+    net = losses.GradientICON(inner_net, similarity=losses.LNCC(sigma=5), lmbda=1.5)
 
+    return net
+
+def init_network(task, pretrained=True):
+    if task == "lung":
+        input_shape = [1, 1, 175, 175, 175]
+    elif task == "knee":
+        input_shape = [1, 1, 80, 192, 192]
+    elif task == "brain":
+        input_shape = [1, 1, 130, 155, 130]
+    else:
+        print(f"Task {task} is not defined. Fall back to the lung model.")
+        task = "lung"
+        input_shape = [1, 1, 175, 175, 175]
+
+    net = make_network()
+    net.assign_identity_map(input_shape)
+
+    if pretrained:
+        from os.path import exists
+        weights_location = f"network_weights/{task}_model"
+
+        if not exists(f"{weights_location}/{task}_model_weights.trch"):
+            print("Downloading pretrained model")
+            import urllib.request
+            import os
+
+            os.makedirs(weights_location, exist_ok=True)
+            urllib.request.urlretrieve(
+                f"https://github.com/uncbiag/ICON/releases/download/pretrained_models_v1.0.0/{task}_model_weights_step_2.trch",
+                f"{weights_location}/{task}_model_weights.trch",
+            )
+
+        trained_weights = torch.load(
+            f"{weights_location}/{task}_model_weights.trch",
+            map_location=torch.device("cpu"),
+        )
+        net.regis_net.load_state_dict(trained_weights, strict=False)
+    net.assign_identity_map(input_shape)
+
+    net.to(config.device)
+    net.eval()
     return net
 
 
@@ -61,37 +94,4 @@ def lung_network_preprocess(
 
 
 def LungCT_registration_model(pretrained=True):
-
-
-    net = make_network()
-    input_shape = [1, 1, 175, 175, 175]
-
-    net.assign_identity_map(input_shape)
-
-    if pretrained:
-        from os.path import exists
-
-        if not exists("network_weights/lung_model_wms/"):
-            print("Downloading pretrained model (200mb)")
-            import urllib.request
-            import os
-
-            os.makedirs("network_weights", exist_ok=True)
-            urllib.request.urlretrieve(
-                "https://github.com/uncbiag/ICON/releases/download/pretrained_lung_model/lung_model_wms.zip",
-                "network_weights/lung_model_wms.zip",
-            )
-            shutil.unpack_archive(
-                "network_weights/lung_model_wms.zip", "network_weights/lung_model_wms"
-            )
-
-        trained_weights = torch.load(
-            "network_weights/lung_model_wms/warped_masked_smuth/net91800",
-            map_location=torch.device("cpu"),
-        )
-        net.regis_net.load_state_dict(trained_weights, strict=False)
-    net.assign_identity_map(input_shape)
-
-    net.to(config.device)
-    net.eval()
-    return net
+    return init_network("lung", pretrained=pretrained)
