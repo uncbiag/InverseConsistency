@@ -19,7 +19,7 @@ class TestItkRegistration(unittest.TestCase):
         icon_registration.test_utils.download_test_data()
 
         model = icon_registration.pretrained_models.brain_registration_model(
-            pretrained=False
+            pretrained=True
         )
 
         image_A = itk.imread(
