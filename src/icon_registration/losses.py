@@ -566,9 +566,9 @@ def ssd_only_interpolated(image_A, image_B):
 
 def flips(phi, in_percentage=False):
     if len(phi.size()) == 5:
-        a = phi[:, :, 1:, 1:, 1:] - phi[:, :, :-1, 1:, 1:]
-        b = phi[:, :, 1:, 1:, 1:] - phi[:, :, 1:, :-1, 1:]
-        c = phi[:, :, 1:, 1:, 1:] - phi[:, :, 1:, 1:, :-1]
+        a = (phi[:, :, 1:, 1:, 1:] - phi[:, :, :-1, 1:, 1:]).detach()
+        b = (phi[:, :, 1:, 1:, 1:] - phi[:, :, 1:, :-1, 1:]).detach()
+        c = (phi[:, :, 1:, 1:, 1:] - phi[:, :, 1:, 1:, :-1]).detach()
 
         dV = torch.sum(torch.cross(a, b, 1) * c, axis=1, keepdims=True)
         if in_percentage:
