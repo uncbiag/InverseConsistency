@@ -246,13 +246,12 @@ class BendingEnergyNet(network_wrappers.RegistrationModule):
         self.similarity = similarity
 
     def compute_bending_energy_loss(self, phi_AB_vectorfield):
-        '''
-        dxdx = [f[x+h, y] + f[x-h, y] - 2 * f[x, y]]/(h**2)
-        dxdy = [f[x+h, y+h] + f[x-h, y-h] - f[x+h, y-h] - f[x-h, y+h]]/(4*h**2)
-        BE_2d = |dxdx| + |dydy| + 2 * |dxdy|
-        psudo code: BE_2d = [torch.mean(dxdx**2) + torch.mean(dydy**2) + 2 * torch.mean(dxdy**2)]/4.0  
-        BE_3d = |dxdx| + |dydy| + |dzdz| + 2 * |dxdy| + 2 * |dydz| + 2 * |dxdz|
-        '''
+        # dxdx = [f[x+h, y] + f[x-h, y] - 2 * f[x, y]]/(h**2)
+        # dxdy = [f[x+h, y+h] + f[x-h, y-h] - f[x+h, y-h] - f[x-h, y+h]]/(4*h**2)
+        # BE_2d = |dxdx| + |dydy| + 2 * |dxdy|
+        # psudo code: BE_2d = [torch.mean(dxdx**2) + torch.mean(dydy**2) + 2 * torch.mean(dxdy**2)]/4.0  
+        # BE_3d = |dxdx| + |dydy| + |dzdz| + 2 * |dxdy| + 2 * |dydz| + 2 * |dxdz|
+        
         if len(self.identity_map.shape) == 3:
             dxdx = (phi_AB_vectorfield[:, :, 2:] 
                 - 2*phi_AB_vectorfield[:, :, 1:-1]
