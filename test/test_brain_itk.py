@@ -11,6 +11,7 @@ import icon_registration.itk_wrapper
 
 class TestItkRegistration(unittest.TestCase):
     def test_itk_registration(self):
+        print("brain GradICON")
         import os
 
         os.environ["FOOTSTEPS_NAME"] = "test"
@@ -74,5 +75,5 @@ class TestItkRegistration(unittest.TestCase):
         )
 
         self.assertLess(
-            np.mean(np.abs(reference - itk.array_from_image(warped_image_A))), 1e-6
+            np.mean(np.abs(reference - itk.array_from_image(warped_image_A))), 1e-5
         )
