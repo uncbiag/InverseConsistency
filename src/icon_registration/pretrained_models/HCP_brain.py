@@ -2,7 +2,7 @@ import itk
 from .lung_ct import init_network
 
 def brain_network_preprocess(image: "itk.Image") -> "itk.Image":
-    if 0 and type(image) == itk.Image[itk.SS, 3] :
+    if type(image) == itk.Image[itk.SS, 3] :
         cast_filter = itk.CastImageFilter[itk.Image[itk.SS, 3], itk.Image[itk.F, 3]].New()
         cast_filter.SetInput(image)
         cast_filter.Update()
