@@ -34,6 +34,9 @@ def register_pair(
 
     A_npy = np.array(image_A)
     B_npy = np.array(image_B)
+
+    assert(np.max(A_npy) != np.min(A_npy))
+    assert(np.max(B_npy) != np.min(B_npy))
     # turn images into torch Tensors: add feature and batch dimensions (each of length 1)
     A_trch = torch.Tensor(A_npy).to(config.device)[None, None]
     B_trch = torch.Tensor(B_npy).to(config.device)[None, None]
@@ -60,6 +63,9 @@ def register_pair(
 
     # phi_AB and phi_BA are [1, 3, H, W, D] pytorch tensors representing the forward and backward
     # maps computed by the model
+    if hasattr(model, "prepare_for_viz"):
+        with torch.no_grad():
+            model.prepare_for_viz(A_resized, B_resized)
     phi_AB = model.phi_AB(model.identity_map)
     phi_BA = model.phi_BA(model.identity_map)
 
@@ -90,7 +96,7 @@ def create_itk_transform(phi, ident, image_A, image_B) -> "itk.CompositeTransfor
 
     for _ in network_shape_list:
         scale = scale[:, None]
-    disp *= scale
+    disp *= scale - 1
 
     # disp is a shape [3, H, W, D] tensor with vector components in the order [vi, vj, vk]
     disp_itk_format = (
