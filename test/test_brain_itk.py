@@ -66,8 +66,8 @@ class TestItkRegistration(unittest.TestCase):
         plt.savefig(footsteps.output_dir + "warped.png")
         plt.clf()
 
-        reference = np.load(icon_registration.test_utils.TEST_DATA_DIR / "brain_test_data/2_and_8_warped_itkfix.npy")
-        
+
+        reference = np.load(icon_registration.test_utils.TEST_DATA_DIR / "brain_test_data/2_and_8_warped_itkfix.npy")       
 
         np.save(
             footsteps.output_dir + "warped_brain.npy",
