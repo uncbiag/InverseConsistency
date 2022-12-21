@@ -18,3 +18,11 @@ icon\_registration.pretrained\_models.lung_ct
    :undoc-members:
    :show-inheritance:
 
+icon\_registration.pretrained\_models.HCP_brain
+-------------------------------------------------------
+
+.. automodule:: icon_registration.pretrained_models.HCP_brain
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
