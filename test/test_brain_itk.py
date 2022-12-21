@@ -24,11 +24,11 @@ class TestItkRegistration(unittest.TestCase):
         )
 
         image_A = itk.imread(
-            f"{icon_registration.test_utils.TEST_DATA_DIR}/brain_test_data/212318_T1w_acpc_dc_restore_brain.nii.gz"
+            f"{icon_registration.test_utils.TEST_DATA_DIR}/brain_test_data/2_T1w_acpc_dc_restore_brain.nii.gz"
         )
 
         image_B = itk.imread(
-            f"{icon_registration.test_utils.TEST_DATA_DIR}/brain_test_data/857263_T1w_acpc_dc_restore_brain.nii.gz"
+            f"{icon_registration.test_utils.TEST_DATA_DIR}/brain_test_data/8_T1w_acpc_dc_restore_brain.nii.gz"
         )
 
         image_A_processed = icon_registration.pretrained_models.brain_network_preprocess(
@@ -66,14 +66,14 @@ class TestItkRegistration(unittest.TestCase):
         plt.savefig(footsteps.output_dir + "warped.png")
         plt.clf()
 
-        reference = np.load(icon_registration.test_utils.TEST_DATA_DIR / "brain_test_data/212318_and_857263_warped.npy")
+        reference = np.load(icon_registration.test_utils.TEST_DATA_DIR / "brain_test_data/2_and_8_warped_itkfix.npy")
         
 
         np.save(
-            footsteps.output_dir + "warped.npy",
+            footsteps.output_dir + "warped_brain.npy",
             itk.array_from_image(warped_image_A)[40],
         )
 
         self.assertLess(
-            np.mean(np.abs(reference - itk.array_from_image(warped_image_A))), 1e-5
+            np.mean(np.abs(reference - itk.array_from_image(warped_image_A)[40])), 1e-5
         )

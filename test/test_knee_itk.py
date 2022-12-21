@@ -71,13 +71,56 @@ class TestItkRegistration(unittest.TestCase):
         plt.savefig(footsteps.output_dir + "warped.png")
         plt.clf()
 
-        reference = np.load(icon_registration.test_utils.TEST_DATA_DIR / "warped.npy")
+        reference = np.load(icon_registration.test_utils.TEST_DATA_DIR / "warped_itkfix.npy")
 
         np.save(
-            footsteps.output_dir + "warped.npy",
+            footsteps.output_dir + "warped_knee.npy",
             itk.array_from_image(warped_image_A)[40],
         )
 
         self.assertLess(
             np.mean(np.abs(reference - itk.array_from_image(warped_image_A)[40])), 1e-6
         )
+    def test_itk_consistency(self):
+        import torch
+
+        img = torch.tensor([[1, 2, 3], [4, 5.0, 6], [7, 8, 13]])[None, None]
+
+        warper = icon_registration.RegistrationModule()
+
+        warper.assign_identity_map([1, 1, 3, 3])
+
+        deformation = torch.zeros((1, 2, 3, 3))
+
+        deformation[0, 0, 0, 0] = 0.5
+
+        deformation[0, 1, 2, 2] = -0.5
+
+        img_func = warper.as_function(img)
+
+        warped_image_torch = img_func(warper.identity_map + deformation)
+
+        itk_img = itk.image_from_array(img[0, 0])
+
+        sp = itk.Vector[itk.D, 2]((4.2, 6.9))
+
+        itk_img.SetSpacing(sp)
+
+        phi = icon_registration.itk_wrapper.create_itk_transform(
+            deformation + warper.identity_map, warper.identity_map, itk_img, itk_img
+        )
+
+        interpolator = itk.LinearInterpolateImageFunction.New(itk_img)
+        
+        warped_image_A = itk.resample_image_filter(
+            itk_img,
+            transform=phi,
+            interpolator=interpolator,
+            use_reference_image=True,
+            reference_image=itk_img,
+        )
+
+        self.assertTrue(
+            np.all(np.array(warped_image_A) == np.array(warped_image_torch))
+        )
+
