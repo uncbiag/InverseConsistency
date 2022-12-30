@@ -196,7 +196,7 @@ def pad_or_crop(x, shape, dimension):
 
 
 class UNet2(nn.Module):
-    def __init__(self, num_layers, channels, dimension, input_channels=2):
+    def __init__(self, num_layers, channels, dimension):
         super().__init__()
         self.dimension = dimension
         if dimension == 2:
@@ -247,7 +247,7 @@ class UNet2(nn.Module):
         #                Residual(up_channels_out[depth])
         #            )
         self.lastConv = self.Conv(
-            input_channels + up_channels_out[0], dimension, kernel_size=3, padding=1
+            down_channels[0] + up_channels_out[0], dimension, kernel_size=3, padding=1
         )
         torch.nn.init.zeros_(self.lastConv.weight)
         torch.nn.init.zeros_(self.lastConv.bias)
@@ -531,7 +531,6 @@ def tallUNet2(dimension=2, input_channels=1):
         5,
         [[input_channels*2, 16, 32, 64, 256, 512], [16, 32, 64, 128, 256]],
         dimension,
-        input_channels=input_channels*2,
     )
 
 
