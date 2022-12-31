@@ -58,7 +58,7 @@ class InverseConsistentNet(network_wrappers.RegistrationModule):
             # tag images during warping so that the similarity measure
             # can use information about whether a sample is interpolated
             # or extrapolated
-            inbounds_tag = torch.zeros(tuple(image_A.shape), device=image_A.device)
+            inbounds_tag = torch.zeros([image_A.shape[0]] + [1] + list(image_A.shape[2:]), device=image_A.device)
             if len(self.input_shape) - 2 == 3:
                 inbounds_tag[:, :, 1:-1, 1:-1, 1:-1] = 1.0
             elif len(self.input_shape) - 2 == 2:
@@ -184,7 +184,7 @@ class GradientICON(network_wrappers.RegistrationModule):
             # tag images during warping so that the similarity measure
             # can use information about whether a sample is interpolated
             # or extrapolated
-            inbounds_tag = torch.zeros(tuple(image_A.shape), device=image_A.device)
+            inbounds_tag = torch.zeros([image_A.shape[0]] + [1] + list(image_A.shape[2:]), device=image_A.device)
             if len(self.input_shape) - 2 == 3:
                 inbounds_tag[:, :, 1:-1, 1:-1, 1:-1] = 1.0
             elif len(self.input_shape) - 2 == 2:
@@ -311,7 +311,7 @@ class BendingEnergyNet(network_wrappers.RegistrationModule):
             # tag images during warping so that the similarity measure
             # can use information about whether a sample is interpolated
             # or extrapolated
-            inbounds_tag = torch.zeros(tuple(image_A.shape), device=image_A.device)
+            inbounds_tag = torch.zeros([image_A.shape[0]] + [1] + list(image_A.shape[2:]), device=image_A.device)
             if len(self.input_shape) - 2 == 3:
                 inbounds_tag[:, :, 1:-1, 1:-1, 1:-1] = 1.0
             elif len(self.input_shape) - 2 == 2:
@@ -594,7 +594,7 @@ class SSDOnlyInterpolated(SimilarityBase):
         inbounds_mask = image_A[:, -1:]
         image_A = image_A[:, :-1]
         assert image_A.shape == image_B.shape, "The shape of image_A and image_B sould be the same."
-        
+
         inbounds_squared_distance = inbounds_mask * (image_A - image_B) ** 2
         sum_squared_distance = torch.sum(inbounds_squared_distance, dimensions_to_sum_over)
         divisor = torch.sum(inbounds_mask, dimensions_to_sum_over)
