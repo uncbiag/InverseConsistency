@@ -7,6 +7,7 @@ from icon_registration import config
 
 from .. import networks
 from .lung_ct import init_network
+from ..losses import SSD
 
 
 def OAI_knees_registration_model(pretrained=True):
@@ -29,7 +30,7 @@ def OAI_knees_registration_model(pretrained=True):
             hires_net,
             icon_registration.FunctionFromVectorField(networks.tallUNet2(dimension=3)),
         ),
-        lambda x, y: torch.mean((x - y) ** 2),
+        SSD(),
         3600,
     )
 
