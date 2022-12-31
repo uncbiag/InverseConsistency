@@ -61,6 +61,7 @@ class Test2DRegistrationTrain(unittest.TestCase):
 
         import icon_registration.data as data
         import icon_registration.networks as networks
+        from icon_registration import SSD
 
         import numpy as np
         import torch
@@ -88,7 +89,7 @@ class Test2DRegistrationTrain(unittest.TestCase):
             icon_registration.FunctionFromVectorField(networks.tallUNet2(dimension=2)),
             # Our image similarity metric. The last channel of x and y is whether the value is interpolated or extrapolated,
             # which is used by some metrics but not this one
-            lambda x, y: torch.mean((x[:, :1] - y[:, :1]) ** 2),
+            SSD(),
             lmbda,
         )
 
