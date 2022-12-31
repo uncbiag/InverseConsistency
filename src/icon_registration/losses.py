@@ -32,6 +32,8 @@ class InverseConsistentNet(network_wrappers.RegistrationModule):
 
         self.regis_net = network
         self.lmbda = lmbda
+
+        assert isinstance(similarity, SimilarityBase)
         self.similarity = similarity
 
     def __call__(self, image_A, image_B) -> ICONLoss:
@@ -52,26 +54,28 @@ class InverseConsistentNet(network_wrappers.RegistrationModule):
         self.phi_AB_vectorfield = self.phi_AB(self.identity_map)
         self.phi_BA_vectorfield = self.phi_BA(self.identity_map)
 
-        # tag images during warping so that the similarity measure
-        # can use information about whether a sample is interpolated
-        # or extrapolated
-
-        inbounds_tag = torch.zeros(tuple(image_A.shape), device=image_A.device)
-        if len(self.input_shape) - 2 == 3:
-            inbounds_tag[:, :, 1:-1, 1:-1, 1:-1] = 1.0
-        elif len(self.input_shape) - 2 == 2:
-            inbounds_tag[:, :, 1:-1, 1:-1] = 1.0
+        if self.similarity.isInterpolated:
+            # tag images during warping so that the similarity measure
+            # can use information about whether a sample is interpolated
+            # or extrapolated
+            inbounds_tag = torch.zeros(tuple(image_A.shape), device=image_A.device)
+            if len(self.input_shape) - 2 == 3:
+                inbounds_tag[:, :, 1:-1, 1:-1, 1:-1] = 1.0
+            elif len(self.input_shape) - 2 == 2:
+                inbounds_tag[:, :, 1:-1, 1:-1] = 1.0
+            else:
+                inbounds_tag[:, :, 1:-1] = 1.0
         else:
-            inbounds_tag[:, :, 1:-1] = 1.0
+            inbounds_tag = None
 
         self.warped_image_A = compute_warped_image_multiNC(
-            torch.cat([image_A, inbounds_tag], axis=1),
+            torch.cat([image_A, inbounds_tag], axis=1) if inbounds_tag else image_A,
             self.phi_AB_vectorfield,
             self.spacing,
             1,
         )
         self.warped_image_B = compute_warped_image_multiNC(
-            torch.cat([image_B, inbounds_tag], axis=1),
+            torch.cat([image_B, inbounds_tag], axis=1) if inbounds_tag else image_B,
             self.phi_BA_vectorfield,
             self.spacing,
             1,
@@ -176,23 +180,25 @@ class GradientICON(network_wrappers.RegistrationModule):
         self.phi_AB_vectorfield = phi_AB(self.identity_map)
         self.phi_BA_vectorfield = phi_BA(self.identity_map)
 
-        # tag images during warping so that the similarity measure
-        # can use information about whether a sample is interpolated
-        # or extrapolated
-
-        inbounds_tag = torch.zeros(tuple(image_A.shape), device=image_A.device)
-        if len(self.input_shape) - 2 == 3:
-            inbounds_tag[:, :, 1:-1, 1:-1, 1:-1] = 1.0
-        elif len(self.input_shape) - 2 == 2:
-            inbounds_tag[:, :, 1:-1, 1:-1] = 1.0
+        if self.similarity.isInterpolated:
+            # tag images during warping so that the similarity measure
+            # can use information about whether a sample is interpolated
+            # or extrapolated
+            inbounds_tag = torch.zeros(tuple(image_A.shape), device=image_A.device)
+            if len(self.input_shape) - 2 == 3:
+                inbounds_tag[:, :, 1:-1, 1:-1, 1:-1] = 1.0
+            elif len(self.input_shape) - 2 == 2:
+                inbounds_tag[:, :, 1:-1, 1:-1] = 1.0
+            else:
+                inbounds_tag[:, :, 1:-1] = 1.0
         else:
-            inbounds_tag[:, :, 1:-1] = 1.0
+            inbounds_tag = None
 
         self.warped_image_A = self.as_function(
-            torch.cat([image_A, inbounds_tag], axis=1)
+            torch.cat([image_A, inbounds_tag], axis=1) if inbounds_tag else image_A
         )(self.phi_AB_vectorfield)
         self.warped_image_B = self.as_function(
-            torch.cat([image_B, inbounds_tag], axis=1)
+            torch.cat([image_B, inbounds_tag], axis=1) if inbounds_tag else image_B
         )(self.phi_BA_vectorfield)
         similarity_loss = self.similarity(
             self.warped_image_A, image_B
@@ -301,20 +307,22 @@ class BendingEnergyNet(network_wrappers.RegistrationModule):
 
     def compute_similarity_measure(self, phi_AB_vectorfield, image_A, image_B):
 
-        # tag images during warping so that the similarity measure
-        # can use information about whether a sample is interpolated
-        # or extrapolated
-
-        inbounds_tag = torch.zeros(tuple(image_A.shape), device=image_A.device)
-        if len(self.input_shape) - 2 == 3:
-            inbounds_tag[:, :, 1:-1, 1:-1, 1:-1] = 1.0
-        elif len(self.input_shape) - 2 == 2:
-            inbounds_tag[:, :, 1:-1, 1:-1] = 1.0
+        if self.similarity.isInterpolated:
+            # tag images during warping so that the similarity measure
+            # can use information about whether a sample is interpolated
+            # or extrapolated
+            inbounds_tag = torch.zeros(tuple(image_A.shape), device=image_A.device)
+            if len(self.input_shape) - 2 == 3:
+                inbounds_tag[:, :, 1:-1, 1:-1, 1:-1] = 1.0
+            elif len(self.input_shape) - 2 == 2:
+                inbounds_tag[:, :, 1:-1, 1:-1] = 1.0
+            else:
+                inbounds_tag[:, :, 1:-1] = 1.0
         else:
-            inbounds_tag[:, :, 1:-1] = 1.0
+            inbounds_tag = None
 
         self.warped_image_A = self.as_function(
-            torch.cat([image_A, inbounds_tag], axis=1)
+            torch.cat([image_A, inbounds_tag], axis=1) if inbounds_tag else image_A
         )(phi_AB_vectorfield)
         
         similarity_loss = self.similarity(
@@ -407,11 +415,19 @@ def normalize(image):
     return image_centered / stddev
 
 
-def ncc(image_A, image_B):
-    A = normalize(image_A[:, :1])
-    B = normalize(image_B)
-    res = torch.mean(A * B)
-    return 1 - res
+class SimilarityBase:
+    def __init__(self, isInterpolated=False):
+        self.isInterpolated = isInterpolated
+
+class NCC(SimilarityBase):
+    def __init__(self):
+        super().__init__(isInterpolated=False)
+
+    def __call__(self, image_A, image_B):
+        A = normalize(image_A)
+        B = normalize(image_B)
+        res = torch.mean(A * B)
+        return 1 - res
 
 
 def gaussian_blur(tensor, kernel_size, sigma, padding="same"):
@@ -419,30 +435,32 @@ def gaussian_blur(tensor, kernel_size, sigma, padding="same"):
         tensor.device, dtype=tensor.dtype
     )
     out = tensor
+    group = tensor.shape[1]
 
     if len(tensor.shape) - 2 == 1:
-        out = torch.conv1d(out, kernel1d[None, None, :], padding="same")
+        out = torch.conv1d(out, kernel1d[None, None, :].expand(group,-1,-1), padding="same", groups=group)
     elif len(tensor.shape) - 2 == 2:
-        out = torch.conv2d(out, kernel1d[None, None, :, None], padding="same")
-        out = torch.conv2d(out, kernel1d[None, None, None, :], padding="same")
+        out = torch.conv2d(out, kernel1d[None, None, :, None].expand(group,-1,-1,-1), padding="same", groups=group)
+        out = torch.conv2d(out, kernel1d[None, None, None, :].expand(group,-1,-1,-1), padding="same", groups=group)
     elif len(tensor.shape) - 2 == 3:
-        out = torch.conv3d(out, kernel1d[None, None, :, None, None], padding="same")
-        out = torch.conv3d(out, kernel1d[None, None, None, :, None], padding="same")
-        out = torch.conv3d(out, kernel1d[None, None, None, None, :], padding="same")
+        out = torch.conv3d(out, kernel1d[None, None, :, None, None].expand(group,-1,-1,-1,-1), padding="same", groups=group)
+        out = torch.conv3d(out, kernel1d[None, None, None, :, None].expand(group,-1,-1,-1,-1), padding="same", groups=group)
+        out = torch.conv3d(out, kernel1d[None, None, None, None, :].expand(group,-1,-1,-1,-1), padding="same", groups=group)
 
     return out
 
 
-class LNCC:
+class LNCC(SimilarityBase):
     def __init__(self, sigma):
+        super().__init__(isInterpolated=False)
         self.sigma = sigma
 
     def blur(self, tensor):
         return gaussian_blur(tensor, self.sigma * 4 + 1, self.sigma)
 
     def __call__(self, image_A, image_B):
-        I = image_A[:, :1]
-        J = image_B[:, :1]
+        I = image_A
+        J = image_B
         return torch.mean(
             1
             - (self.blur(I * J) - (self.blur(I) * self.blur(J)))
@@ -453,8 +471,9 @@ class LNCC:
         )
 
 
-class LNCCOnlyInterpolated:
+class LNCCOnlyInterpolated(SimilarityBase):
     def __init__(self, sigma):
+        super().__init__(isInterpolated=True)
         self.sigma = sigma
 
     def blur(self, tensor):
@@ -462,8 +481,8 @@ class LNCCOnlyInterpolated:
 
     def __call__(self, image_A, image_B):
 
-        I = image_A[:, :1]
-        J = image_B[:, :1]
+        I = image_A[:, :-1]
+        J = image_B
         lncc_everywhere = 1 - (
             self.blur(I * J) - (self.blur(I) * self.blur(J))
         ) / torch.sqrt(
@@ -472,7 +491,7 @@ class LNCCOnlyInterpolated:
         )
 
         with torch.no_grad():
-            A_inbounds = image_A[:, 1:]
+            A_inbounds = image_A[:, -1:]
 
             inbounds_mask = self.blur(A_inbounds) > 0.999
 
@@ -490,19 +509,21 @@ class LNCCOnlyInterpolated:
         return torch.mean(lncc_loss)
 
 
-class BlurredSSD:
+class BlurredSSD(SimilarityBase):
     def __init__(self, sigma):
+        super().__init__(isInterpolated=False)
         self.sigma = sigma
 
     def blur(self, tensor):
         return gaussian_blur(tensor, self.sigma * 4 + 1, self.sigma)
 
     def __call__(self, image_A, image_B):
-        return torch.mean((self.blur(image_A[:, :1]) - self.blur(image_B[:, :1])) ** 2)
+        return torch.mean((self.blur(image_A) - self.blur(image_B)) ** 2)
 
 
-class AdaptiveNCC:
+class AdaptiveNCC(SimilarityBase):
     def __init__(self, level=4, threshold=0.1, gamma=1.5, sigma=2):
+        super().__init__(isInterpolated=False)
         self.level = level
         self.threshold = threshold
         self.gamma = gamma
@@ -513,7 +534,7 @@ class AdaptiveNCC:
 
     def __call__(self, image_A, image_B):
         def _nccBeforeMean(image_A, image_B):
-            A = normalize(image_A[:, :1])
+            A = normalize(image_A)
             B = normalize(image_B)
             res = torch.mean(A * B, dim=(1, 2, 3, 4))
             return 1 - res
@@ -543,25 +564,32 @@ class AdaptiveNCC:
 
         return torch.mean(sim_loss)
 
+class SSD(SimilarityBase):
+    def __init__(self):
+        super().__init__(isInterpolated=False)
 
-def ssd(image_A, image_B):
-    return torch.mean((image_A[:, :1] - image_B[:, :1]) ** 2)
+    def __call__(self, image_A, image_B):
+        return torch.mean((image_A - image_B) ** 2)
 
+class SSDOnlyInterpolated(SimilarityBase):
+    def __init__(self):
+        super().__init__(isInterpolated=True)
 
-def ssd_only_interpolated(image_A, image_B):
-    if len(image_A.shape) - 2 == 3:
-        dimensions_to_sum_over = [2, 3, 4]
-    elif len(image_A.shape) - 2 == 2:
-        dimensions_to_sum_over = [2, 3]
-    elif len(image_A.shape) - 2 == 1:
-        dimensions_to_sum_over = [2]
-    inbounds_mask = image_A[:, 1:]
-    image_A = image_A[:, :1]
-    inbounds_squared_distance = inbounds_mask * (image_A - image_B) ** 2
-    sum_squared_distance = torch.sum(inbounds_squared_distance, dimensions_to_sum_over)
-    divisor = torch.sum(inbounds_mask, dimensions_to_sum_over)
-    ssds = sum_squared_distance / divisor
-    return torch.mean(ssds)
+    def __call__(self, image_A, image_B):
+        if len(image_A.shape) - 2 == 3:
+            dimensions_to_sum_over = [2, 3, 4]
+        elif len(image_A.shape) - 2 == 2:
+            dimensions_to_sum_over = [2, 3]
+        elif len(image_A.shape) - 2 == 1:
+            dimensions_to_sum_over = [2]
+
+        inbounds_mask = image_A[:, -1:]
+        image_A = image_A[:, :-1]
+        inbounds_squared_distance = inbounds_mask * (image_A - image_B) ** 2
+        sum_squared_distance = torch.sum(inbounds_squared_distance, dimensions_to_sum_over)
+        divisor = torch.sum(inbounds_mask, dimensions_to_sum_over)
+        ssds = sum_squared_distance / divisor
+        return torch.mean(ssds)
 
 
 def flips(phi, in_percentage=False):
