@@ -69,13 +69,13 @@ class InverseConsistentNet(network_wrappers.RegistrationModule):
             inbounds_tag = None
 
         self.warped_image_A = compute_warped_image_multiNC(
-            torch.cat([image_A, inbounds_tag], axis=1) if inbounds_tag else image_A,
+            torch.cat([image_A, inbounds_tag], axis=1) if inbounds_tag is not None else image_A,
             self.phi_AB_vectorfield,
             self.spacing,
             1,
         )
         self.warped_image_B = compute_warped_image_multiNC(
-            torch.cat([image_B, inbounds_tag], axis=1) if inbounds_tag else image_B,
+            torch.cat([image_B, inbounds_tag], axis=1) if inbounds_tag is not None else image_B,
             self.phi_BA_vectorfield,
             self.spacing,
             1,
@@ -195,10 +195,10 @@ class GradientICON(network_wrappers.RegistrationModule):
             inbounds_tag = None
 
         self.warped_image_A = self.as_function(
-            torch.cat([image_A, inbounds_tag], axis=1) if inbounds_tag else image_A
+            torch.cat([image_A, inbounds_tag], axis=1) if inbounds_tag is not None else image_A
         )(self.phi_AB_vectorfield)
         self.warped_image_B = self.as_function(
-            torch.cat([image_B, inbounds_tag], axis=1) if inbounds_tag else image_B
+            torch.cat([image_B, inbounds_tag], axis=1) if inbounds_tag is not None else image_B
         )(self.phi_BA_vectorfield)
         similarity_loss = self.similarity(
             self.warped_image_A, image_B
@@ -322,7 +322,7 @@ class BendingEnergyNet(network_wrappers.RegistrationModule):
             inbounds_tag = None
 
         self.warped_image_A = self.as_function(
-            torch.cat([image_A, inbounds_tag], axis=1) if inbounds_tag else image_A
+            torch.cat([image_A, inbounds_tag], axis=1) if inbounds_tag is not None else image_A
         )(phi_AB_vectorfield)
         
         similarity_loss = self.similarity(
@@ -424,6 +424,7 @@ class NCC(SimilarityBase):
         super().__init__(isInterpolated=False)
 
     def __call__(self, image_A, image_B):
+        assert image_A.shape == image_B.shape, "The shape of image_A and image_B sould be the same."
         A = normalize(image_A)
         B = normalize(image_B)
         res = torch.mean(A * B)
@@ -461,6 +462,8 @@ class LNCC(SimilarityBase):
     def __call__(self, image_A, image_B):
         I = image_A
         J = image_B
+        assert I.shape == J.shape, "The shape of image I and J sould be the same."
+
         return torch.mean(
             1
             - (self.blur(I * J) - (self.blur(I) * self.blur(J)))
@@ -483,6 +486,8 @@ class LNCCOnlyInterpolated(SimilarityBase):
 
         I = image_A[:, :-1]
         J = image_B
+
+        assert I.shape == J.shape, "The shape of image I and J sould be the same."
         lncc_everywhere = 1 - (
             self.blur(I * J) - (self.blur(I) * self.blur(J))
         ) / torch.sqrt(
@@ -518,6 +523,7 @@ class BlurredSSD(SimilarityBase):
         return gaussian_blur(tensor, self.sigma * 4 + 1, self.sigma)
 
     def __call__(self, image_A, image_B):
+        assert image_A.shape == image_B.shape, "The shape of image_A and image_B sould be the same."
         return torch.mean((self.blur(image_A) - self.blur(image_B)) ** 2)
 
 
@@ -533,6 +539,7 @@ class AdaptiveNCC(SimilarityBase):
         return gaussian_blur(tensor, self.sigma * 2 + 1, self.sigma)
 
     def __call__(self, image_A, image_B):
+        assert image_A.shape == image_B.shape, "The shape of image_A and image_B sould be the same."
         def _nccBeforeMean(image_A, image_B):
             A = normalize(image_A)
             B = normalize(image_B)
@@ -569,6 +576,7 @@ class SSD(SimilarityBase):
         super().__init__(isInterpolated=False)
 
     def __call__(self, image_A, image_B):
+        assert image_A.shape == image_B.shape, "The shape of image_A and image_B sould be the same."
         return torch.mean((image_A - image_B) ** 2)
 
 class SSDOnlyInterpolated(SimilarityBase):
@@ -585,6 +593,8 @@ class SSDOnlyInterpolated(SimilarityBase):
 
         inbounds_mask = image_A[:, -1:]
         image_A = image_A[:, :-1]
+        assert image_A.shape == image_B.shape, "The shape of image_A and image_B sould be the same."
+        
         inbounds_squared_distance = inbounds_mask * (image_A - image_B) ** 2
         sum_squared_distance = torch.sum(inbounds_squared_distance, dimensions_to_sum_over)
         divisor = torch.sum(inbounds_mask, dimensions_to_sum_over)
