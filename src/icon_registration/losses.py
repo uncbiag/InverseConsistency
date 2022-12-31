@@ -54,7 +54,7 @@ class InverseConsistentNet(network_wrappers.RegistrationModule):
         self.phi_AB_vectorfield = self.phi_AB(self.identity_map)
         self.phi_BA_vectorfield = self.phi_BA(self.identity_map)
 
-        if self.similarity.isInterpolated:
+        if getattr(self.similarity, "isInterpolated", False):
             # tag images during warping so that the similarity measure
             # can use information about whether a sample is interpolated
             # or extrapolated
@@ -180,7 +180,7 @@ class GradientICON(network_wrappers.RegistrationModule):
         self.phi_AB_vectorfield = phi_AB(self.identity_map)
         self.phi_BA_vectorfield = phi_BA(self.identity_map)
 
-        if self.similarity.isInterpolated:
+        if getattr(self.similarity, "isInterpolated", False):
             # tag images during warping so that the similarity measure
             # can use information about whether a sample is interpolated
             # or extrapolated
@@ -307,7 +307,7 @@ class BendingEnergyNet(network_wrappers.RegistrationModule):
 
     def compute_similarity_measure(self, phi_AB_vectorfield, image_A, image_B):
 
-        if self.similarity.isInterpolated:
+        if getattr(self.similarity, "isInterpolated", False):
             # tag images during warping so that the similarity measure
             # can use information about whether a sample is interpolated
             # or extrapolated
