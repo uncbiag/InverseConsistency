@@ -5,6 +5,8 @@ from icon_registration.losses import (
     GradientICON,
     InverseConsistentNet,
     gaussian_blur,
+    ssd_only_interpolated,
+    ssd,
     SSDOnlyInterpolated,
     SSD,
     NCC

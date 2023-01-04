@@ -629,3 +629,8 @@ def flips(phi, in_percentage=False):
             return torch.sum(du < 0) / phi.shape[0]
     else:
         raise ValueError()
+
+
+######## These are kept for backward-capability. #########
+ssd = SSD()
+ssd_only_interpolated = SSDOnlyInterpolated()
