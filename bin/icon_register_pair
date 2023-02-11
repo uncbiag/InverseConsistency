@@ -24,10 +24,10 @@ args = parser.parse_args()
 model_package_name = ".".join(args.model.split(".")[:-1])
 model_name = args.model.split(".")[-1]
 
-model_package = importlib.import(model_package_name)
+model_package = importlib.import_module(model_package_name)
 net = getattr(model_package, model_name)()
 
-if args.weights_path):
+if args.weights_path:
   weights = torch.load(args.weights_path)
   net.regis_net.load_state_dict(weights)
 
