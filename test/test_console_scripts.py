@@ -1,6 +1,6 @@
 import unittest
 import subprocess
-import icon_registration.test_utils
+from icon_registration import test_utils
 
 class TestConsoleScripts(unittest.TestCase):
     def test_register_pair_script(self):
