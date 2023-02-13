@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 import voxelmorph as vxm
 
-from HCP_synthmorph_eval import save, transform, read_affine
+from HCP_synthmorph_helper import save, transform, read_affine
 
 # This script borrows some functions from https://github.com/freesurfer/freesurfer/blob/a810044ae08a24402436c1d43472b3b3df06592a/mri_synthmorph/mri_synthmorph
 

@@ -147,22 +147,28 @@ class GradientICONSparse(network_wrappers.RegistrationModule):
         # can use information about whether a sample is interpolated
         # or extrapolated
 
-        inbounds_tag = torch.zeros(tuple(image_A.shape), device=image_A.device)
-        if len(self.input_shape) - 2 == 3:
-            inbounds_tag[:, :, 1:-1, 1:-1, 1:-1] = 1.0
-        elif len(self.input_shape) - 2 == 2:
-            inbounds_tag[:, :, 1:-1, 1:-1] = 1.0
+        if getattr(self.similarity, "isInterpolated", False):
+            # tag images during warping so that the similarity measure
+            # can use information about whether a sample is interpolated
+            # or extrapolated
+            inbounds_tag = torch.zeros([image_A.shape[0]] + [1] + list(image_A.shape[2:]), device=image_A.device)
+            if len(self.input_shape) - 2 == 3:
+                inbounds_tag[:, :, 1:-1, 1:-1, 1:-1] = 1.0
+            elif len(self.input_shape) - 2 == 2:
+                inbounds_tag[:, :, 1:-1, 1:-1] = 1.0
+            else:
+                inbounds_tag[:, :, 1:-1] = 1.0
         else:
-            inbounds_tag[:, :, 1:-1] = 1.0
+            inbounds_tag = None
 
         self.warped_image_A = compute_warped_image_multiNC(
-            torch.cat([image_A, inbounds_tag], axis=1),
+            torch.cat([image_A, inbounds_tag], axis=1) if inbounds_tag is not None else image_A,
             self.phi_AB_vectorfield,
             self.spacing,
             1,
         )
         self.warped_image_B = compute_warped_image_multiNC(
-            torch.cat([image_B, inbounds_tag], axis=1),
+            torch.cat([image_B, inbounds_tag], axis=1) if inbounds_tag is not None else image_B,
             self.phi_BA_vectorfield,
             self.spacing,
             1,
