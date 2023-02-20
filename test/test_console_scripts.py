@@ -19,3 +19,5 @@ class TestConsoleScripts(unittest.TestCase):
             footsteps.output_dir + "warped.nii.gz"
           ]
         )
+        import itk
+        itk.imread(footsteps.output_dir + "warped.nii.gz")
