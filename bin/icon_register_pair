@@ -36,8 +36,8 @@ moving_image = itk.imread(args.moving_image)
 
 # We want images normalized to 0.0, 1.0
 for image in fixed_image, moving_image:
-    assert(np.abs(np.max(itk.get_array_from_image(image)) - 1.0) < 0.2)
-    assert(np.abs(np.min(itk.get_array_from_image(image))) < 0.2)
+    assert(np.abs(np.max(np.array(image)) - 1.0) < 0.2)
+    assert(np.abs(np.min(np.array(image))) < 0.2)
 
 phi, _ = icon.itk_wrapper.register_pair(
     net, moving_image, fixed_image, finetune_steps=90 if args.finetune else None
