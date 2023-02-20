@@ -32,8 +32,6 @@ class InverseConsistentNet(network_wrappers.RegistrationModule):
 
         self.regis_net = network
         self.lmbda = lmbda
-
-        assert isinstance(similarity, SimilarityBase)
         self.similarity = similarity
 
     def __call__(self, image_A, image_B) -> ICONLoss:
