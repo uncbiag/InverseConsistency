@@ -4,6 +4,7 @@ from icon_registration import test_utils
 
 class TestConsoleScripts(unittest.TestCase):
     def test_register_pair_script(self):
+        import footsteps
         test_utils.download_test_data()
         subprocess.run(
           [
@@ -15,6 +16,6 @@ class TestConsoleScripts(unittest.TestCase):
             "--model",
             "icon_registration.pretrained_models.brain_registration_model"
             "--warped_image_out", 
-            "warped.nii.gz"
+            footsteps.output_dir + "warped.nii.gz"
           ]
         )
