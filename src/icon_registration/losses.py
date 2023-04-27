@@ -32,8 +32,6 @@ class InverseConsistentNet(network_wrappers.RegistrationModule):
 
         self.regis_net = network
         self.lmbda = lmbda
-
-        assert isinstance(similarity, SimilarityBase)
         self.similarity = similarity
 
     def __call__(self, image_A, image_B) -> ICONLoss:
@@ -488,7 +486,7 @@ class LNCCOnlyInterpolated(SimilarityBase):
         J = image_B
 
         assert I.shape == J.shape, "The shape of image I and J sould be the same."
-        lncc_everywhere = 1 - (
+        lncc_everywhere = (
             self.blur(I * J) - (self.blur(I) * self.blur(J))
         ) / torch.sqrt(
             (self.blur(I * I) - self.blur(I) ** 2 + 0.00001)
@@ -507,9 +505,9 @@ class LNCCOnlyInterpolated(SimilarityBase):
         elif len(image_A.shape) - 2 == 1:
             dimensions_to_sum_over = [2]
 
-        lncc_loss = torch.sum(
+        lncc_loss = 1 - torch.sum(
             inbounds_mask * lncc_everywhere, dimensions_to_sum_over
-        ) / torch.sum(inbounds_mask, dimensions_to_sum_over)
+        ) / (torch.sum(inbounds_mask, dimensions_to_sum_over) + 0.00001)
 
         return torch.mean(lncc_loss)
 
