@@ -36,12 +36,33 @@ def itk_crop_foreground(image: itk.Image, monai_crop_pad:monai.transforms.CropFo
 
     return image
 
-def itk_resize_with_pad_or_crop(image: itk.image, pad_or_crop:monai.transforms.ResizeWithPadOrCrop):
+def itk_resize_with_pad_or_crop(image: itk.image, pad_or_crop:monai.transforms.SpatialCrop):
     torch_image = torch.tensor(itk.GetArrayFromImage(image))
+
+    boundary_coords = pad_or_crop.com
     
 
-def itk_crop(image:itk.image, crop:monai.transforms.SpatialPad):
-    pass
+def itk_crop(image:itk.image, cropper:monai.transforms.CenterSpatialCrop):
+    
+    torch_image = torch.tensor(itk.GetArrayFromImage(image))
+    crop = cropper.compute_slices(spatial_size=torch_image.shape[:])
+
+    lower = [s.start for s in reversed(crop)]
+    upper = [dim_len - s.stop for dim_len, s in reversed(list(zip(torch_image.shape, crop)))]
+
+    print(lower, upper)
+
+
+    filter = itk.CropImageFilter[type(image), type(image)].New()
+    filter.SetInput(image)
+    filter.SetLowerBoundaryCropSize(lower)
+    filter.SetUpperBoundaryCropSize(upper)
+
+    filter.Update()
+
+    image = filter.GetOutput()
+
+    return image
 
 
 
