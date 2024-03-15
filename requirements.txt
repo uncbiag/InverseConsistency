@@ -4,5 +4,5 @@ tensorboard
 tqdm
 matplotlib
 footsteps>=0.1.6
-itk==5.3.0
+itk>=5.3.0
 girder_client==3.1.8
