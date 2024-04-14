@@ -9,6 +9,9 @@ While we can learn to register 2-D images in a few minutes even on cpu, training
 - Recording all hyperparameters assosciated with each training run so that you can replicate it- this is super important if you are investing hours or days into a training run, and super easy with :mod:`footsteps`
 
 - Generating and saving metrics, visualizations and weight checkpoints throughout training.
+
+We provide three tutorials using the open source OASIS dataset: finetuning uniGradICON, training GradICON, and training ConstrICON.
+
  
 
 Preprocessing the Dataset
