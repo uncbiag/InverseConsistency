@@ -31,8 +31,8 @@ def scale_map(map, sz, spacing):
         else:
             scales.append(1)
             shifts.append(0)
-    scales = torch.tensor(scales).to(map.device)
-    shifts = torch.tensor(shifts).to(map.device)
+    scales = torch.tensor(scales).float().to(map.device)
+    shifts = torch.tensor(shifts).float().to(map.device)
 
     if ndim == 3:
         scales= scales[:, None, None, None]
