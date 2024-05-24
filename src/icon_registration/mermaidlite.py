@@ -34,6 +34,8 @@ def scale_map(map, sz, spacing):
     scales = torch.tensor(scales).float().to(map.device)
     shifts = torch.tensor(shifts).float().to(map.device)
 
+    print(scales, shifts)
+
     if ndim == 3:
         scales= scales[:, None, None, None]
         shifts = shifts[:, None, None, None]
