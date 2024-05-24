@@ -43,7 +43,7 @@ class RegistrationModule(nn.Module):
         into a tensor of intensities.
         """
         def image_as_function(coordinates):
-            if hasattr(coordinates, "isIdentity") and coordinate.shape == image.shape:
+            if hasattr(coordinates, "isIdentity") and coordinates.shape == image.shape:
                 return image
                 
             return compute_warped_image_multiNC(
