@@ -15,22 +15,32 @@ def scale_map(map, sz, spacing):
     :return: returns the scaled map
     """
 
-    map_scaled = torch.zeros_like(map)
     ndim = len(spacing)
 
     # This is to compensate to get back to the [-1,1] mapping of the following form
     # id[d]*=2./(sz[d]-1)
     # id[d]-=1.
 
+    scales = []
+    shifts = []
+
     for d in range(ndim):
         if sz[d + 2] > 1:
-            map_scaled[:, d, ...] = (
-                map[:, d, ...] * (2.0 / (sz[d + 2] - 1.0) / spacing[d])
-                - 1.0
-                # map[:, d, ...] * 2.0 - 1.0
-            )
+            scales.append((2.0 / (sz[d + 2] - 1.0) / spacing[d]))
+            shifts.append(-1)       
         else:
-            map_scaled[:, d, ...] = map[:, d, ...]
+            scales.append(1)
+            shifts.append(0)
+    scales = torch.tensor(scales).to(map.device)
+    shifts = torch.tensor(shifts).to(map.device)
+
+    if ndim == 3:
+        scales= scales[:, None, None, None]
+        shifts = shifts[:, None, None, None]
+    if ndim == 2:
+        scales= scales[:, None, None]
+        shifts = shifts[:, None, None]
+    map_scaled = map * scales - shifts
 
     return map_scaled
 
