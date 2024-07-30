@@ -597,6 +597,20 @@ class LNCC(SimilarityBase):
             )
         )
 
+class SquaredLNCC(LNCC):
+    def __call__(self, image_A, image_B):
+        I = image_A
+        J = image_B
+        assert I.shape == J.shape, "The shape of image I and J sould be the same."
+
+        return torch.mean(
+            1
+            - ((self.blur(I * J) - (self.blur(I) * self.blur(J)))
+            / torch.sqrt(
+                (torch.relu(self.blur(I * I) - self.blur(I) ** 2) + 0.00001)
+                * (torch.relu(self.blur(J * J) - self.blur(J) ** 2) + 0.00001)
+            ))**2
+        )
 
 class LNCCOnlyInterpolated(SimilarityBase):
     def __init__(self, sigma):
@@ -725,6 +739,72 @@ class SSDOnlyInterpolated(SimilarityBase):
         ssds = sum_squared_distance / divisor
         return torch.mean(ssds)
 
+class MINDSSC(SimilarityBase):
+    def __init__(self, radius, dilation):
+        super().__init__(isInterpolated=False)
+        self.radius = radius
+        self.dilation = dilation
+
+    def pdist_squared(self, x):
+        xx = (x ** 2).sum(dim=1).unsqueeze(2)
+        yy = xx.permute(0, 2, 1)
+        dist = xx + yy - 2.0 * torch.bmm(x.permute(0, 2, 1), x)
+        dist[dist != dist] = 0
+        dist = torch.clamp(dist, 0.0, torch.inf)
+        return dist
+
+    def compute_mindssc(self, img):
+        # see http://mpheinrich.de/pub/miccai2013_943_mheinrich.pdf for details on the MIND-SSC descriptor
+
+        # kernel size
+        kernel_size = self.radius * 2 + 1
+
+        # define start and end locations for self-similarity pattern
+        six_neighbourhood = torch.Tensor([[0, 1, 1],
+                                          [1, 1, 0],
+                                          [1, 0, 1],
+                                          [1, 1, 2],
+                                          [2, 1, 1],
+                                          [1, 2, 1]]).long()
+
+        # squared distances
+        dist = self.pdist_squared(six_neighbourhood.t().unsqueeze(0)).squeeze(0)
+
+        # define comparison mask
+        x, y = torch.meshgrid(torch.arange(6), torch.arange(6))
+        mask = ((x > y).view(-1) & (dist == 2).view(-1))
+
+        # build kernel
+        idx_shift1 = six_neighbourhood.unsqueeze(1).repeat(1, 6, 1).view(-1, 3)[mask, :]
+        idx_shift2 = six_neighbourhood.unsqueeze(0).repeat(6, 1, 1).view(-1, 3)[mask, :]
+        mshift1 = torch.zeros(12, 1, 3, 3, 3).cuda()
+        mshift1.view(-1)[torch.arange(12) * 27 + idx_shift1[:, 0] * 9 + idx_shift1[:, 1] * 3 + idx_shift1[:, 2]] = 1
+        mshift2 = torch.zeros(12, 1, 3, 3, 3).cuda()
+        mshift2.view(-1)[torch.arange(12) * 27 + idx_shift2[:, 0] * 9 + idx_shift2[:, 1] * 3 + idx_shift2[:, 2]] = 1
+        rpad1 = torch.nn.ReplicationPad3d(self.dilation)
+        rpad2 = torch.nn.ReplicationPad3d(self.radius)
+
+        # compute patch-ssd
+        ssd = F.avg_pool3d(rpad2(
+            (F.conv3d(rpad1(img), mshift1, dilation=self.dilation) - F.conv3d(rpad1(img), mshift2, dilation=self.dilation)) ** 2),
+                           kernel_size, stride=1)
+
+        # MIND equation
+        mind = ssd - torch.min(ssd, 1, keepdim=True)[0]
+        mind_var = torch.mean(mind, 1, keepdim=True)
+        mind_var = torch.clamp(mind_var, (mind_var.mean() * 0.001).item(), (mind_var.mean() * 1000).item())
+        mind = mind / mind_var
+        mind = torch.exp(-mind)
+
+        # permute to have same ordering as C++ code
+        mind = mind[:, torch.Tensor([6, 8, 1, 11, 2, 10, 0, 7, 9, 4, 5, 3]).long(), :, :, :]
+
+        return mind
+
+    def __call__(self, image_A, image_B):
+        assert image_A.shape == image_B.shape, "The shape of image_A and image_B sould be the same."
+        assert len(image_A.shape) - 2 == 3, "The input image should be 3D."
+        return torch.mean((self.compute_mindssc(image_A) - self.compute_mindssc(image_B)) ** 2)
 
 def flips(phi, in_percentage=False):
     if len(phi.size()) == 5:

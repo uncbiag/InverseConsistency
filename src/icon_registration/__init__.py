@@ -1,6 +1,7 @@
 from icon_registration.losses import (
     LNCC,
     LNCCOnlyInterpolated,
+    SquaredLNCC,
     BlurredSSD,
     GradientICON,
     InverseConsistentNet,
@@ -9,7 +10,8 @@ from icon_registration.losses import (
     ssd,
     SSDOnlyInterpolated,
     SSD,
-    NCC
+    NCC,
+    MINDSSC,
 )
 from icon_registration.network_wrappers import (
     DownsampleRegistration,
