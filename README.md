@@ -39,6 +39,9 @@ _CVPR 2023_ https://arxiv.org/abs/2206.05897
 }
 ```
 
+## uniGradICON and multiGradICON
+
+If you are interested in general purpose deep learning registration approaches check out [uniGradICON and multiGradICON](https://github.com/uniGradICON). These networks were trained using the GradICON technology but over many different datasets allowing them to generalize to different unimodal and multimodal registration tasks. 
 
 ## Video Presentation
 
